@@ -1,5 +1,6 @@
 #include "DHT.h"
 #include "OneWire.h"
+#include "Console.h"
 
 // hardware
 int lightPin = 0; // photoresistor
@@ -24,7 +25,6 @@ typedef struct my_soilmeasurement {
   int tempSoilC;
   int tempSoilF;  
 } SoilMeasurement;
-
 SoilMeasurement sm;
 
 int lightResistor;
@@ -33,8 +33,17 @@ void setup() {
   Serial.begin(9600); 
   Serial.println("PlantStation is warming up\n");
   dht.begin();
-}
 
+  /*
+   * Adding Yun Code
+   */
+  Bridge.begin();
+  Console.begin();
+
+  while (!Console) { ; }
+  Console.println("PlantStation is warming up\n");
+  Console.println("Yun Console is warming up\n");
+}
 void loop() {
   delay(1000);
   am = getAirMeasurements();
@@ -42,7 +51,10 @@ void loop() {
   lightResistor = analogRead(lightPin);
   
   // wanna have one of these for sending to ip:port option
-  outputSerial(am, lightResistor, sm);
+  //outputSerial(am, lightResistor, sm);
+
+  outputConsole(am, lightResistor, sm);
+
 }
 
 struct my_airmeasurement getAirMeasurements() {
@@ -54,6 +66,7 @@ struct my_airmeasurement getAirMeasurements() {
   
   if (me.humidityAir == 0  && me.tempAirC == 0) {
     Serial.println("Failed to read from DHT sensor.");
+    Console.println("Failed to read from DHT sensor.");
   }
   return me;
 }
@@ -68,17 +81,17 @@ struct my_soilmeasurement getSoilMeasurements() {
       //no more sensors on chain, reset search
       ds.reset_search();
       Serial.println("No probe sensor detected");
-     // return -88;
+      Console.println("No probe sensor detected");
   }
 
   if ( OneWire::crc8( addr, 7) != addr[7]) {
       Serial.println("CRC is not valid!");
-      //return -77;
+      Console.println("CRC is not valid!");
   }
 
   if ( addr[0] != 0x10 && addr[0] != 0x28) {
       Serial.print("Device is not recognized");
-      //return -66;
+      Console.print("Device is not recognized");
   }
 
   ds.reset();
@@ -119,8 +132,26 @@ void outputSerial(struct my_airmeasurement, int lightResistor, struct my_soilmea
   Serial.print(";ProbeTemperatureCelcius:");
   Serial.print(sm.tempSoilC);
   Serial.print(";ProbeTemperatureFahrenheit:");
-Serial.println(sm.tempSoilF);
+  Serial.println(sm.tempSoilF);
 }   
+
+void outputConsole(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {
+  Console.print("HumidityPercent:");
+  Console.print(am.humidityAir);
+  Console.print(";AirTemperatureCelcius:");
+  Console.print(am.tempAirC);
+  Console.print(";AirTemperatureFahrenheit:");
+  Console.print(am.tempAirF);
+  Console.print(";HeatIndex:");
+  Console.print(am.heatIndex);
+  Console.print(";Light:");
+  Console.print(lightResistor); 
+  Console.print(";ProbeTemperatureCelcius:");
+  Console.print(sm.tempSoilC);
+  Console.print(";ProbeTemperatureFahrenheit:");
+  Console.println(sm.tempSoilF);
+}
+    
 
 
 // DHT11
@@ -133,4 +164,5 @@ Serial.println(sm.tempSoilF);
 // todo: add led and red led for status of whole thing!
 
 // http://forum.arduino.cc/index.php?topic=42140.0
+// http://www.arduino.cc/en/Tutorial/ConsoleRead
 
