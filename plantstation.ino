@@ -34,16 +34,14 @@ void setup() {
   Serial.println("PlantStation is warming up\n");
   dht.begin();
 
-  /*
-   * Adding Yun Code
-   */
   Bridge.begin();
   Console.begin();
 
   while (!Console) { ; }
-  Console.println("PlantStation is warming up\n");
-  Console.println("Yun Console is warming up\n");
+  Console.print("PlantStation is warming up.\n");
+  Console.println("Yun Console is warming up.\n");
 }
+
 void loop() {
   delay(1000);
   am = getAirMeasurements();
@@ -52,9 +50,7 @@ void loop() {
   
   // wanna have one of these for sending to ip:port option
   //outputSerial(am, lightResistor, sm);
-
   outputConsole(am, lightResistor, sm);
-
 }
 
 struct my_airmeasurement getAirMeasurements() {
@@ -151,8 +147,6 @@ void outputConsole(struct my_airmeasurement, int lightResistor, struct my_soilme
   Console.print(";ProbeTemperatureFahrenheit:");
   Console.println(sm.tempSoilF);
 }
-    
-
 
 // DHT11
 // Connect pin 1 (on the left) of the sensor to +5V
