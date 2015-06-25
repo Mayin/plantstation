@@ -49,8 +49,7 @@ void loop() {
   lightResistor = analogRead(lightPin);
   
   // wanna have one of these for sending to ip:port option
-  //outputSerial(am, lightResistor, sm);
-  outputConsole(am, lightResistor, sm);
+  outputEvent(am, lightResistor, sm);
 }
 
 struct my_airmeasurement getAirMeasurements() {
@@ -114,38 +113,24 @@ struct my_soilmeasurement getSoilMeasurements() {
   return me;
 }
 
-void outputSerial(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {
-  Serial.print("HumidityPercent:");
-  Serial.print(am.humidityAir);
-  Serial.print(";AirTemperatureCelcius:");
-  Serial.print(am.tempAirC);
-  Serial.print(";AirTemperatureFahrenheit:");
-  Serial.print(am.tempAirF);
-  Serial.print(";HeatIndex:");
-  Serial.print(am.heatIndex);
-  Serial.print(";Light:");
-  Serial.print(lightResistor); 
-  Serial.print(";ProbeTemperatureCelcius:");
-  Serial.print(sm.tempSoilC);
-  Serial.print(";ProbeTemperatureFahrenheit:");
-  Serial.println(sm.tempSoilF);
-}   
+void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {  
+  String my_output = "HumidityPercent:";
+  my_output += am.humidityAir;
+  my_output += ";AirTemperatureCelcius:";
+  my_output += am.tempAirC;
+  my_output += ";AirTemperatureFahrenheit:";
+  my_output += am.tempAirF;
+  my_output += ";HeatIndex:";
+  my_output += am.heatIndex;
+  my_output += ";Light:";
+  my_output += lightResistor;
+  my_output += ";ProbeTemperatureCelcius";
+  my_output += sm.tempSoilC;
+  my_output += ";ProbeTemperatureFahrenheit:";
+  my_output += sm.tempSoilF;
 
-void outputConsole(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {
-  Console.print("HumidityPercent:");
-  Console.print(am.humidityAir);
-  Console.print(";AirTemperatureCelcius:");
-  Console.print(am.tempAirC);
-  Console.print(";AirTemperatureFahrenheit:");
-  Console.print(am.tempAirF);
-  Console.print(";HeatIndex:");
-  Console.print(am.heatIndex);
-  Console.print(";Light:");
-  Console.print(lightResistor); 
-  Console.print(";ProbeTemperatureCelcius:");
-  Console.print(sm.tempSoilC);
-  Console.print(";ProbeTemperatureFahrenheit:");
-  Console.println(sm.tempSoilF);
+  Serial.println(my_output);
+  Console.println(my_output);
 }
 
 // DHT11
