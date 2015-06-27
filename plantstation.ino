@@ -2,6 +2,12 @@
 #include "OneWire.h"
 #include "Console.h"
 
+#include "Bridge.h"
+#include "ApiClient.h"
+#include "KeenClient.h"
+
+#include "params.h"
+
 // hardware
 int lightPin = 0; // photoresistor
 int dhtPin = 2;   // dht11
@@ -9,6 +15,7 @@ int probePin = 3; // temp probe
 
 DHT dht(dhtPin, DHT11);
 OneWire ds(probePin);
+KeenClient keen;
 
 // todo make this array (of error codes)
 //boolean error;
@@ -38,18 +45,22 @@ void setup() {
   Console.begin();
 
   while (!Console) { ; }
-  Console.print("PlantStation is warming up.\n");
-  Console.println("Yun Console is warming up.\n");
+  Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nNow With Keen.\n\n");
+
+  while (!Serial);
 }
 
 void loop() {
-  delay(1000);
+
+  delay(60000);
   am = getAirMeasurements();
   sm = getSoilMeasurements();
   lightResistor = analogRead(lightPin);
   
-  // wanna have one of these for sending to ip:port option
   outputEvent(am, lightResistor, sm);
+  
+  // send to keen
+  sendToKeen(am, lightResistor, sm);
 }
 
 struct my_airmeasurement getAirMeasurements() {
@@ -111,6 +122,42 @@ struct my_soilmeasurement getSoilMeasurements() {
   me.tempSoilF = me.tempSoilC*9/5+32;
 
   return me;
+}
+
+void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {  
+  String my_output = "{";
+  my_output += "\"HumidityPercent\":";
+  my_output += am.humidityAir;
+  my_output += ",\"AirTemperatureCelcius\":";
+  my_output += am.tempAirC;
+  my_output += ",\"AirTemperatureFahrenheit\":";
+  my_output += am.tempAirF;
+  my_output += ",\"HeatIndex\":";
+  my_output += am.heatIndex;
+  my_output += ",\"Light\":";
+  my_output += lightResistor;
+  my_output += ",\"ProbeTemperatureCelcius\":";
+  my_output += sm.tempSoilC;
+  my_output += ",\"ProbeTemperatureFahrenheit\":";
+  my_output += sm.tempSoilF;
+  my_output += "}";
+    
+  keen.setApiVersion(F("3.0"));
+  keen.setProjectId(KEEN_PROJECT_ID);
+  keen.setWriteKey(KEEN_WRITE_KEY);
+ 
+  keen.addEvent("arduino_board_test", my_output);
+  keen.printRequest();
+
+  Console.println();
+
+  while (keen.available()) {
+    char c = keen.read();
+    Console.print(c);
+  }
+  Console.println();
+
+//  Console.flush();
 }
 
 void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {  
