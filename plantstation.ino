@@ -35,6 +35,7 @@ SoilMeasurement sm;
 int lightResistor;
 
 String appId = "Plant01";
+String location = "Dinning Room Window";
 boolean lightStatus = false;
 String waterLevelStatus = "OK";
 boolean waterPumpStatus = false;
@@ -147,6 +148,8 @@ void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasu
   my_output += sm.tempSoilF;
   my_output += ",\"WaterLevelStatus\":\"";
   my_output += waterLevelStatus;
+  my_output += "\",\"Location\":\"";
+  my_output += location;
   my_output += "\",\"LightStatus\":";
   my_output += lightStatus;
   my_output += ",\"WaterPumptStatus\":";
@@ -193,6 +196,8 @@ void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeas
   my_output += waterLevelStatus;
   my_output += ";LightStatus:";
   my_output += lightStatus;
+  my_output += ";Location:";
+  my_output += location;
   my_output += ";WaterPumptStatus:";
   my_output += waterPumpStatus;
 
