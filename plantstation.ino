@@ -1,11 +1,9 @@
-#include "DHT.h"
-#include "OneWire.h"
-#include "Console.h"
-
-#include "Bridge.h"
 #include "ApiClient.h"
+#include "Bridge.h"
+#include "Console.h"
+#include "DHT.h"
 #include "KeenClient.h"
-
+#include "OneWire.h"
 #include "params.h"
 
 // hardware
@@ -35,6 +33,11 @@ typedef struct my_soilmeasurement {
 SoilMeasurement sm;
 
 int lightResistor;
+
+String appId = "Plant01";
+boolean lightStatus = false;
+String waterLevelStatus = "OK";
+boolean waterPumpStatus = false;
 
 void setup() {
   Serial.begin(9600); 
@@ -126,7 +129,9 @@ struct my_soilmeasurement getSoilMeasurements() {
 
 void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {  
   String my_output = "{";
-  my_output += "\"HumidityPercent\":";
+  my_output += "\"AppId\":\"";
+  my_output += appId;
+  my_output += "\",\"HumidityPercent\":";
   my_output += am.humidityAir;
   my_output += ",\"AirTemperatureCelcius\":";
   my_output += am.tempAirC;
@@ -140,6 +145,12 @@ void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasu
   my_output += sm.tempSoilC;
   my_output += ",\"ProbeTemperatureFahrenheit\":";
   my_output += sm.tempSoilF;
+  my_output += ",\"WaterLevelStatus\":\"";
+  my_output += waterLevelStatus;
+  my_output += "\",\"LightStatus\":";
+  my_output += lightStatus;
+  my_output += ",\"WaterPumptStatus\":";
+  my_output += waterPumpStatus;
   my_output += "}";
     
   keen.setApiVersion(F("3.0"));
@@ -157,11 +168,14 @@ void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasu
   }
   Console.println();
 
-//  Console.flush();
+  Console.flush();
 }
 
 void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {  
-  String my_output = "HumidityPercent:";
+  String my_output = "";
+  my_output += "AppId:";
+  my_output += appId;
+  my_output += ";HumidityPercent:";
   my_output += am.humidityAir;
   my_output += ";AirTemperatureCelcius:";
   my_output += am.tempAirC;
@@ -175,6 +189,12 @@ void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeas
   my_output += sm.tempSoilC;
   my_output += ";ProbeTemperatureFahrenheit:";
   my_output += sm.tempSoilF;
+  my_output += ";WaterLevelStatus:";
+  my_output += waterLevelStatus;
+  my_output += ";LightStatus:";
+  my_output += lightStatus;
+  my_output += ";WaterPumptStatus:";
+  my_output += waterPumpStatus;
 
   Serial.println(my_output);
   Console.println(my_output);
