@@ -8,6 +8,7 @@
 
 // hardware
 int lightPin = 0; // photoresistor
+int hygroPin = 1; // moisture sensor
 int dhtPin = 2;   // dht11
 int probePin = 3; // temp probe
 
@@ -33,6 +34,7 @@ typedef struct my_soilmeasurement {
 SoilMeasurement sm;
 
 int lightResistor;
+int moistureSensor;
 
 String appId = "Plant01";
 String location = "Dinning Room Window";
@@ -60,6 +62,7 @@ void loop() {
   am = getAirMeasurements();
   sm = getSoilMeasurements();
   lightResistor = analogRead(lightPin);
+  moistureSensor = analogRead(hygroPin);
   
   outputEvent(am, lightResistor, sm);
   
@@ -146,6 +149,8 @@ void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasu
   my_output += sm.tempSoilC;
   my_output += ",\"ProbeTemperatureFahrenheit\":";
   my_output += sm.tempSoilF;
+  my_output += ",\"Moisture\":";
+  my_output += moistureSensor;
   my_output += ",\"WaterLevelStatus\":\"";
   my_output += waterLevelStatus;
   my_output += "\",\"Location\":\"";
@@ -192,6 +197,8 @@ void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeas
   my_output += sm.tempSoilC;
   my_output += ";ProbeTemperatureFahrenheit:";
   my_output += sm.tempSoilF;
+  my_output += ";Moisture:";
+  my_output += moistureSensor;
   my_output += ";WaterLevelStatus:";
   my_output += waterLevelStatus;
   my_output += ";LightStatus:";
