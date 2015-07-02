@@ -7,6 +7,9 @@ KeenClient myKeen;
 #include "Bridge.h"
 #include "Console.h"
 
+//=====for 4 Relay Module======================
+#define LightSwitch 4
+
 //=====for Probe Thermometer===================
 #include "OneWire.h"
 const byte probePin = 3;
@@ -57,6 +60,7 @@ long prevMinFiveMillis = 0;
 long minFiveInterval = 300000;
 
 void setup() {
+  pinMode(LightSwitch, OUTPUT);
   Serial.begin(9600); 
   Serial.println("PlantStation is warming up\n");
   myDHT.begin();
@@ -103,12 +107,12 @@ void waterPlants() {
 void switchLights() {
   
   if (lightOnThreshold > lightResistorVal && !lightIsOn) {
-    // flip switch on
+    digitalWrite(LightSwitch, HIGH);
     lightIsOn = true;
   } 
   
   if (lightOnThreshold < lightResistorVal && lightIsOn) {
-    // flip switch off
+    digitalWrite(LightSwitch, LOW);
     lightIsOn = false;
   } 
   
