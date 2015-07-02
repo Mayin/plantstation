@@ -36,7 +36,9 @@ AirMeasurement am;
 
 //=====for photoresistor=======================
 const byte lightPin = A0;
-int lightResistor;
+int lightResistorVal;
+boolean lightIsOn = false;
+const byte lightOnThreshold = 90;
 
 //=====for hygrometer==========================
 const byte hygroPin = A1;
@@ -45,13 +47,14 @@ int moistureSensor;
 //=====these i am still thinking about=========
 String appId = "Plant01";
 String location = "Dinning Room Window";
-boolean lightIsOn = false;
 String waterLevelStatus = "OK";
 boolean waterPumpIsOn = false;
 
 //=====for timed events, etc===================
-long previousMillis = 0;
-long minuteInterval = 60000;
+long prevMinOneMillis = 0;
+long minOneInterval = 60000;
+long prevMinFiveMillis = 0;
+long minFiveInterval = 300000;
 
 void setup() {
   Serial.begin(9600); 
@@ -73,15 +76,24 @@ void loop() {
   
   readAirMeasurements();
   readSoilMeasurements();
-  readLightResistor();
   readMoistureSensor();
+  
+  readLightResistor();
+  
   outputEvent();
   
   // these happen every minute (or so)
-  if (currentMillis - previousMillis > minuteInterval) {
-    previousMillis = currentMillis;
+  if (currentMillis - prevMinOneMillis > minOneInterval) {
+    prevMinOneMillis = currentMillis;
     
     sendToKeen();  
+  }
+  
+  // these happen every five minutes (or so)
+  if (currentMillis - prevMinFiveMillis > minFiveInterval) {
+    prevMinFiveMillis = currentMillis;
+    
+    switchLights();
   }
 }
 
@@ -89,10 +101,21 @@ void waterPlants() {
 }
 
 void switchLights() {
+  
+  if (lightOnThreshold > lightResistorVal && !lightIsOn) {
+    // flip switch on
+    lightIsOn = true;
+  } 
+  
+  if (lightOnThreshold < lightResistorVal && lightIsOn) {
+    // flip switch off
+    lightIsOn = false;
+  } 
+  
 }
 
 void readLightResistor() {
-  lightResistor = analogRead(lightPin);
+  lightResistorVal = analogRead(lightPin);
 }
 
 void readMoistureSensor() {
@@ -168,7 +191,7 @@ void sendToKeen() {
   my_output += ",\"HeatIndex\":";
   my_output += am.heatIndex;
   my_output += ",\"Light\":";
-  my_output += lightResistor;
+  my_output += lightResistorVal;
   my_output += ",\"ProbeTemperatureCelcius\":";
   my_output += sm.tempSoilC;
   my_output += ",\"ProbeTemperatureFahrenheit\":";
@@ -216,7 +239,7 @@ void outputEvent() {
   my_output += ";HeatIndex:";
   my_output += am.heatIndex;
   my_output += ";Light:";
-  my_output += lightResistor;
+  my_output += lightResistorVal;
   my_output += ";ProbeTemperatureCelcius:";
   my_output += sm.tempSoilC;
   
