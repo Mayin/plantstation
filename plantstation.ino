@@ -45,9 +45,9 @@ int moistureSensor;
 //=====these i am still thinking about=========
 String appId = "Plant01";
 String location = "Dinning Room Window";
-boolean lightStatus = false;
+boolean lightIsOn = false;
 String waterLevelStatus = "OK";
-boolean waterPumpStatus = false;
+boolean waterPumpIsOn = false;
 
 void setup() {
   Serial.begin(9600); 
@@ -64,8 +64,8 @@ void setup() {
 }
 
 void loop() {
-  getAirMeasurements();
-  getSoilMeasurements();
+  readAirMeasurements();
+  readSoilMeasurements();
   readLightResistor();
   readMoistureSensor();
   outputEvent();
@@ -89,7 +89,7 @@ void readMoistureSensor() {
   moistureSensor = analogRead(hygroPin);
 }
 
-void getAirMeasurements() {
+void readAirMeasurements() {
   am.humidityAir = myDHT.readHumidity();
   am.tempAirC = myDHT.readTemperature();
   am.tempAirF = myDHT.readTemperature(true);
@@ -101,7 +101,7 @@ void getAirMeasurements() {
   }
 }
 
-void getSoilMeasurements() {
+void readSoilMeasurements() {
 
   byte data[12];
   byte addr[8];
@@ -169,10 +169,10 @@ void sendToKeen() {
   my_output += waterLevelStatus;
   my_output += "\",\"Location\":\"";
   my_output += location;
-  my_output += "\",\"LightStatus\":";
-  my_output += lightStatus;
-  my_output += ",\"WaterPumptStatus\":";
-  my_output += waterPumpStatus;
+  my_output += "\",\"LightIsOn\":";
+  my_output += lightIsOn;
+  my_output += ",\"WaterPumptIsOn\":";
+  my_output += waterPumpIsOn;
   my_output += "}";
     
   myKeen.setApiVersion(F("3.0"));
@@ -215,17 +215,14 @@ void outputEvent() {
   my_output += moistureSensor;
   my_output += ";WaterLevelStatus:";
   my_output += waterLevelStatus;
-  my_output += ";LightStatus:";
-  my_output += lightStatus;
+  my_output += ";LightIsOn:";
+  my_output += lightIsOn;
   my_output += ";Location:";
   my_output += location;
-  my_output += ";WaterPumptStatus:";
-  my_output += waterPumpStatus;
+  my_output += ";WaterPumptIsOn:";
+  my_output += waterPumpIsOn;
 
   Serial.println(my_output);
   Console.println(my_output);
 }
-
-// todo: add led and red led for status of whole thing!
-
 
