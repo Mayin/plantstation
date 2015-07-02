@@ -24,7 +24,7 @@ const byte dhtPin = 2;
 DHT myDHT(dhtPin, DHT11);
 
 typedef struct my_airmeasurement {
-  float humidityAir;
+  byte humidityAir;
   float tempAirC;
   float tempAirF;
   float heatIndex;
@@ -35,11 +35,11 @@ AirMeasurement am;
 #include "params.h"
 
 //=====for photoresistor=======================
-const byte lightPin = 0;
+const byte lightPin = A0;
 int lightResistor;
 
 //=====for hygrometer==========================
-const byte hygroPin = 1;
+const byte hygroPin = A1;
 int moistureSensor;
 
 //=====these i am still thinking about=========
@@ -64,14 +64,11 @@ void setup() {
 }
 
 void loop() {
-  am = getAirMeasurements();
-  sm = getSoilMeasurements();
-  lightResistor = analogRead(lightPin);
-  moistureSensor = analogRead(hygroPin);
-  
+  getAirMeasurements();
+  getSoilMeasurements();
+  readLightResistor();
+  readMoistureSensor();
   outputEvent(am, lightResistor, sm);
-  
-  // send to keen
   sendToKeen(am, lightResistor, sm);
 
   // We run this once a minute, approximately
@@ -84,22 +81,27 @@ void waterPlants() {
 void switchLights() {
 }
 
-struct my_airmeasurement getAirMeasurements() {
-  AirMeasurement me;
-  me.humidityAir = myDHT.readHumidity();
-  me.tempAirC = myDHT.readTemperature();
-  me.tempAirF = myDHT.readTemperature(true);
-  me.heatIndex = myDHT.computeHeatIndex(me.tempAirF, me.humidityAir);
+void readLightResistor() {
+  lightResistor = analogRead(lightPin);
+}
+
+void readMoistureSensor() {
+  moistureSensor = analogRead(hygroPin);
+}
+
+void getAirMeasurements() {
+  am.humidityAir = myDHT.readHumidity();
+  am.tempAirC = myDHT.readTemperature();
+  am.tempAirF = myDHT.readTemperature(true);
+  am.heatIndex = myDHT.computeHeatIndex(am.tempAirF, am.humidityAir);
   
-  if (me.humidityAir == 0  && me.tempAirC == 0) {
+  if (am.humidityAir == 0  && am.tempAirC == 0) {
     Serial.println("Failed to read from DHT sensor.");
     Console.println("Failed to read from DHT sensor.");
   }
-  return me;
 }
 
-struct my_soilmeasurement getSoilMeasurements() {
-  SoilMeasurement me;
+void getSoilMeasurements() {
 
   byte data[12];
   byte addr[8];
@@ -139,10 +141,8 @@ struct my_soilmeasurement getSoilMeasurements() {
   byte LSB = data[0];
 
   float tempRead = ((MSB << 8) | LSB); //using two's compliment
-  me.tempSoilC = tempRead / 16;
-  me.tempSoilF = me.tempSoilC*9/5+32;
-
-  return me;
+  sm.tempSoilC = tempRead / 16;
+  sm.tempSoilF = sm.tempSoilC*9/5+32;
 }
 
 void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {  
