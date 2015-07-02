@@ -49,6 +49,10 @@ boolean lightIsOn = false;
 String waterLevelStatus = "OK";
 boolean waterPumpIsOn = false;
 
+//=====for timed events, etc===================
+long previousMillis = 0;
+long minuteInterval = 60000;
+
 void setup() {
   Serial.begin(9600); 
   Serial.println("PlantStation is warming up\n");
@@ -61,18 +65,24 @@ void setup() {
   Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nKeen is warming up.\n\n");
 
   while (!Serial);
+  delay(5000);
 }
 
 void loop() {
+  unsigned long currentMillis = millis();
+  
   readAirMeasurements();
   readSoilMeasurements();
   readLightResistor();
   readMoistureSensor();
   outputEvent();
-  sendToKeen();
-
-  // We run this once a minute, approximately
-  delay(60000);
+  
+  // these happen every minute (or so)
+  if (currentMillis - previousMillis > minuteInterval) {
+    previousMillis = currentMillis;
+    
+    sendToKeen();  
+  }
 }
 
 void waterPlants() {
@@ -209,6 +219,7 @@ void outputEvent() {
   my_output += lightResistor;
   my_output += ";ProbeTemperatureCelcius:";
   my_output += sm.tempSoilC;
+  
   my_output += ";ProbeTemperatureFahrenheit:";
   my_output += sm.tempSoilF;
   my_output += ";Moisture:";
@@ -218,6 +229,7 @@ void outputEvent() {
   my_output += ";LightIsOn:";
   my_output += lightIsOn;
   my_output += ";Location:";
+  
   my_output += location;
   my_output += ";WaterPumptIsOn:";
   my_output += waterPumpIsOn;
