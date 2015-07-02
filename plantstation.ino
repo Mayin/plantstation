@@ -68,8 +68,8 @@ void loop() {
   getSoilMeasurements();
   readLightResistor();
   readMoistureSensor();
-  outputEvent(am, lightResistor, sm);
-  sendToKeen(am, lightResistor, sm);
+  outputEvent();
+  sendToKeen();
 
   // We run this once a minute, approximately
   delay(60000);
@@ -145,7 +145,7 @@ void getSoilMeasurements() {
   sm.tempSoilF = sm.tempSoilC*9/5+32;
 }
 
-void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {  
+void sendToKeen() {  
   String my_output = "{";
   my_output += "\"AppId\":\"";
   my_output += appId;
@@ -193,7 +193,7 @@ void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasu
   Console.flush();
 }
 
-void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeasurement) {  
+void outputEvent() {  
   String my_output = "";
   my_output += "AppId:";
   my_output += appId;
