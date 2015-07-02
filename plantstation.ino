@@ -1,41 +1,48 @@
+//=====for Keen Integration====================
 #include "ApiClient.h"
+#include "KeenClient.h"
+KeenClient myKeen;
+
+//=====for writting to the console=============
 #include "Bridge.h"
 #include "Console.h"
-#include "DHT.h"
-#include "KeenClient.h"
+
+//=====for Probe Thermometer===================
 #include "OneWire.h"
-#include "params.h"
-
-// hardware
-int lightPin = 0; // photoresistor
-int hygroPin = 1; // moisture sensor
-int dhtPin = 2;   // dht11
-int probePin = 3; // temp probe
-
-DHT dht(dhtPin, DHT11);
-OneWire ds(probePin);
-KeenClient keen;
-
-// todo make this array (of error codes)
-//boolean error;
-
-typedef struct my_airmeasurement {
-  int humidityAir;
-  int tempAirC;
-  int tempAirF;
-  int heatIndex;
-} AirMeasurement;
-AirMeasurement am;
+const byte probePin = 3;
+OneWire myPT(probePin);
 
 typedef struct my_soilmeasurement {
-  int tempSoilC;
-  int tempSoilF;  
+  float tempSoilC;
+  float tempSoilF;  
 } SoilMeasurement;
 SoilMeasurement sm;
 
+//=====for Digital Thermo, Humidity Sensor=====
+#include "DHT.h"
+const byte dhtPin = 2;
+DHT myDHT(dhtPin, DHT11);
+
+typedef struct my_airmeasurement {
+  float humidityAir;
+  float tempAirC;
+  float tempAirF;
+  float heatIndex;
+} AirMeasurement;
+AirMeasurement am;
+
+//=====for keys, params========================
+#include "params.h"
+
+//=====for photoresistor=======================
+const byte lightPin = 0;
 int lightResistor;
+
+//=====for hygrometer==========================
+const byte hygroPin = 1;
 int moistureSensor;
 
+//=====these i am still thinking about=========
 String appId = "Plant01";
 String location = "Dinning Room Window";
 boolean lightStatus = false;
@@ -45,20 +52,18 @@ boolean waterPumpStatus = false;
 void setup() {
   Serial.begin(9600); 
   Serial.println("PlantStation is warming up\n");
-  dht.begin();
+  myDHT.begin();
 
   Bridge.begin();
   Console.begin();
 
   while (!Console) { ; }
-  Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nNow With Keen.\n\n");
+  Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nKeen is warming up.\n\n");
 
   while (!Serial);
 }
 
 void loop() {
-
-  delay(60000);
   am = getAirMeasurements();
   sm = getSoilMeasurements();
   lightResistor = analogRead(lightPin);
@@ -68,14 +73,23 @@ void loop() {
   
   // send to keen
   sendToKeen(am, lightResistor, sm);
+
+  // We run this once a minute, approximately
+  delay(60000);
+}
+
+void waterPlants() {
+}
+
+void switchLights() {
 }
 
 struct my_airmeasurement getAirMeasurements() {
   AirMeasurement me;
-  me.humidityAir = dht.readHumidity();
-  me.tempAirC = dht.readTemperature();
-  me.tempAirF = dht.readTemperature(true);
-  me.heatIndex = dht.computeHeatIndex(me.tempAirF, me.humidityAir);
+  me.humidityAir = myDHT.readHumidity();
+  me.tempAirC = myDHT.readTemperature();
+  me.tempAirF = myDHT.readTemperature(true);
+  me.heatIndex = myDHT.computeHeatIndex(me.tempAirF, me.humidityAir);
   
   if (me.humidityAir == 0  && me.tempAirC == 0) {
     Serial.println("Failed to read from DHT sensor.");
@@ -90,9 +104,9 @@ struct my_soilmeasurement getSoilMeasurements() {
   byte data[12];
   byte addr[8];
 
-  if ( !ds.search(addr)) {
+  if ( !myPT.search(addr)) {
       //no more sensors on chain, reset search
-      ds.reset_search();
+      myPT.reset_search();
       Serial.println("No probe sensor detected");
       Console.println("No probe sensor detected");
   }
@@ -107,19 +121,19 @@ struct my_soilmeasurement getSoilMeasurements() {
       Console.print("Device is not recognized");
   }
 
-  ds.reset();
-  ds.select(addr);
-  ds.write(0x44,1); // start conversion, with parasite power on at the end
+  myPT.reset();
+  myPT.select(addr);
+  myPT.write(0x44,1); // start conversion, with parasite power on at the end
 
-  byte present = ds.reset();
-  ds.select(addr);    
-  ds.write(0xBE); // Read Scratchpad
+  byte present = myPT.reset();
+  myPT.select(addr);    
+  myPT.write(0xBE); // Read Scratchpad
 
   for (int i = 0; i < 9; i++) { // we need 9 bytes
-    data[i] = ds.read();
+    data[i] = myPT.read();
   }
   
-  ds.reset_search();
+  myPT.reset_search();
   
   byte MSB = data[1];
   byte LSB = data[0];
@@ -161,17 +175,17 @@ void sendToKeen(struct my_airmeasurement, int lightResistor, struct my_soilmeasu
   my_output += waterPumpStatus;
   my_output += "}";
     
-  keen.setApiVersion(F("3.0"));
-  keen.setProjectId(KEEN_PROJECT_ID);
-  keen.setWriteKey(KEEN_WRITE_KEY);
+  myKeen.setApiVersion(F("3.0"));
+  myKeen.setProjectId(KEEN_PROJECT_ID);
+  myKeen.setWriteKey(KEEN_WRITE_KEY);
  
-  keen.addEvent("arduino_board_test", my_output);
-  keen.printRequest();
+  myKeen.addEvent("arduino_board_test", my_output);
+  myKeen.printRequest();
 
   Console.println();
 
-  while (keen.available()) {
-    char c = keen.read();
+  while (myKeen.available()) {
+    char c = myKeen.read();
     Console.print(c);
   }
   Console.println();
@@ -193,7 +207,7 @@ void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeas
   my_output += am.heatIndex;
   my_output += ";Light:";
   my_output += lightResistor;
-  my_output += ";ProbeTemperatureCelcius";
+  my_output += ";ProbeTemperatureCelcius:";
   my_output += sm.tempSoilC;
   my_output += ";ProbeTemperatureFahrenheit:";
   my_output += sm.tempSoilF;
@@ -212,15 +226,6 @@ void outputEvent(struct my_airmeasurement, int lightResistor, struct my_soilmeas
   Console.println(my_output);
 }
 
-// DHT11
-// Connect pin 1 (on the left) of the sensor to +5V
-// Connect pin 2 of the sensor to whatever your DHTPIN is
-// Connect pin 4 (on the right) of the sensor to GROUND
-// Connect a 10K resistor from pin 2 (data) to pin 1 (power) of the sensor
-// Photoresistor ?
-
 // todo: add led and red led for status of whole thing!
 
-// http://forum.arduino.cc/index.php?topic=42140.0
-// http://www.arduino.cc/en/Tutorial/ConsoleRead
 
