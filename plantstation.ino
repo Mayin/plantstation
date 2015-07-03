@@ -1,16 +1,23 @@
-//=====for Keen Integration====================
+//=====General Deployment Definitions==========
+String appId = "Plant01";
+String location = "Dinning Room Window";
+
+//=====For private keys, params================
+#include "params.h"
+
+//=====For Keen Integration====================
 #include "ApiClient.h"
 #include "KeenClient.h"
 KeenClient myKeen;
 
-//=====for writting to the console=============
+//=====For writting to the console=============
 #include "Bridge.h"
 #include "Console.h"
 
-//=====for 4 Relay Module======================
+//=====For 4 Relay Module======================
 #define LightSwitch 4
 
-//=====for Probe Thermometer===================
+//=====For Probe Thermometer===================
 #include "OneWire.h"
 const byte probePin = 3;
 OneWire myPT(probePin);
@@ -21,41 +28,43 @@ typedef struct my_soilmeasurement {
 } SoilMeasurement;
 SoilMeasurement sm;
 
-//=====for Digital Thermo, Humidity Sensor=====
+//=====For Digital Thermo, Humidity Sensor=====
 #include "DHT.h"
 const byte dhtPin = 2;
 DHT myDHT(dhtPin, DHT11);
 
 typedef struct my_airmeasurement {
   byte humidityAir;
+  float heatIndex;
   float tempAirC;
   float tempAirF;
-  float heatIndex;
 } AirMeasurement;
 AirMeasurement am;
 
-//=====for keys, params========================
-#include "params.h"
-
-//=====for photoresistor=======================
-const byte lightPin = A0;
-int lightResistorVal;
-boolean lightIsOn = false;
+//=====For photoresistor=======================
 const byte lightOnThreshold = 90;
+const byte lightPin = A0;
+boolean lightIsOn = false;
+int lightResistorVal;
 
 //=====for hygrometer==========================
 const byte hygroPin = A1;
-int moistureSensor;
+// todo - find right value for this
+const int moistureThreshold = 500; // <- made this up
+int moistureSensorVal;
 
-//=====these i am still thinking about=========
-String appId = "Plant01";
-String location = "Dinning Room Window";
-String waterLevelStatus = "OK";
+//=====for Water Level=========================
+const byte waterSensorPin = A2;
+// todo - find right value for this
+const int waterLevelThreshold = 400; // <- made this up
 boolean waterPumpIsOn = false;
+int waterLevelVal;
+String waterLevel = "OK";
 
 //=====for timed events, etc===================
 long prevMinOneMillis = 0;
 long minOneInterval = 60000;
+
 long prevMinFiveMillis = 0;
 long minFiveInterval = 300000;
 
@@ -63,8 +72,8 @@ void setup() {
   pinMode(LightSwitch, OUTPUT);
   Serial.begin(9600); 
   Serial.println("PlantStation is warming up\n");
-  myDHT.begin();
 
+  myDHT.begin();
   Bridge.begin();
   Console.begin();
 
@@ -80,9 +89,9 @@ void loop() {
   
   readAirMeasurements();
   readSoilMeasurements();
-  readMoistureSensor();
-  
   readLightResistor();
+  readMoistureSensor();  
+  readWaterLevelSensor();  
   
   outputEvent();
   
@@ -102,20 +111,22 @@ void loop() {
 }
 
 void waterPlants() {
+  if (moistureThreshold < moistureSensorVal && !waterPumpIsOn && waterLevel == "OK") {
+    // todo - water for ten seconds at a time and no more than twice a day?!?
+    // digitalWrite(WaterPump, HIGH);
+    waterPumpIsOn = true;
+  }    
 }
 
 void switchLights() {
-  
   if (lightOnThreshold > lightResistorVal && !lightIsOn) {
     digitalWrite(LightSwitch, HIGH);
     lightIsOn = true;
   } 
-  
   if (lightOnThreshold < lightResistorVal && lightIsOn) {
     digitalWrite(LightSwitch, LOW);
     lightIsOn = false;
-  } 
-  
+  }   
 }
 
 void readLightResistor() {
@@ -123,7 +134,17 @@ void readLightResistor() {
 }
 
 void readMoistureSensor() {
-  moistureSensor = analogRead(hygroPin);
+  moistureSensorVal = analogRead(hygroPin);
+}
+
+void readWaterLevelSensor() {
+  waterLevelVal = analogRead(waterSensorPin);
+  
+  if (waterLevelVal < waterLevelThreshold) {
+    waterLevel = "LOW";
+  } else {
+   waterLevel = "OK";
+  }    
 }
 
 void readAirMeasurements() {
@@ -201,9 +222,9 @@ void sendToKeen() {
   my_output += ",\"ProbeTemperatureFahrenheit\":";
   my_output += sm.tempSoilF;
   my_output += ",\"Moisture\":";
-  my_output += moistureSensor;
+  my_output += moistureSensorVal;
   my_output += ",\"WaterLevelStatus\":\"";
-  my_output += waterLevelStatus;
+  my_output += waterLevel;
   my_output += "\",\"Location\":\"";
   my_output += location;
   my_output += "\",\"LightIsOn\":";
@@ -225,8 +246,8 @@ void sendToKeen() {
     char c = myKeen.read();
     Console.print(c);
   }
-  Console.println();
 
+  Console.println();
   Console.flush();
 }
 
@@ -245,18 +266,16 @@ void outputEvent() {
   my_output += ";Light:";
   my_output += lightResistorVal;
   my_output += ";ProbeTemperatureCelcius:";
-  my_output += sm.tempSoilC;
-  
+  my_output += sm.tempSoilC;  
   my_output += ";ProbeTemperatureFahrenheit:";
   my_output += sm.tempSoilF;
   my_output += ";Moisture:";
-  my_output += moistureSensor;
+  my_output += moistureSensorVal;
   my_output += ";WaterLevelStatus:";
-  my_output += waterLevelStatus;
+  my_output += waterLevel;
   my_output += ";LightIsOn:";
   my_output += lightIsOn;
-  my_output += ";Location:";
-  
+  my_output += ";Location:";  
   my_output += location;
   my_output += ";WaterPumptIsOn:";
   my_output += waterPumpIsOn;
