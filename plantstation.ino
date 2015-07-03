@@ -47,13 +47,13 @@ const byte lightPin = A0;
 boolean lightIsOn = false;
 int lightResistorVal;
 
-//=====for hygrometer==========================
+//=====For Hygrometer==========================
 const byte hygroPin = A1;
 // todo - find right value for this
 const int moistureThreshold = 500; // <- made this up
 int moistureSensorVal;
 
-//=====for Water Level=========================
+//=====For Water Level=========================
 const byte waterSensorPin = A2;
 // todo - find right value for this
 const int waterLevelThreshold = 400; // <- made this up
@@ -61,12 +61,18 @@ boolean waterPumpIsOn = false;
 int waterLevelVal;
 String waterLevel = "OK";
 
-//=====for timed events, etc===================
+//=====For Timed Events=========================
+//long prevSecTenMillis = 0;
+//long secTenInterval = 10000;
+
 long prevMinOneMillis = 0;
 long minOneInterval = 60000;
 
 long prevMinFiveMillis = 0;
 long minFiveInterval = 300000;
+
+long prevHourTwelveMillis = 0;
+long hourTwelveInterval = 43200000;
 
 void setup() {
   pinMode(LightSwitch, OUTPUT);
@@ -108,14 +114,26 @@ void loop() {
     
     switchLights();
   }
+
+  // these happen every twelve hours (or so)
+  if (currentMillis - prevHourTwelveMillis > hourTwelveInterval) {
+    prevHourTwelveMillis = currentMillis;
+    
+    waterPlants();
+  }
 }
 
 void waterPlants() {
-  if (moistureThreshold < moistureSensorVal && !waterPumpIsOn && waterLevel == "OK") {
-    // todo - water for ten seconds at a time and no more than twice a day?!?
-    // digitalWrite(WaterPump, HIGH);
-    waterPumpIsOn = true;
-  }    
+//  if (moistureThreshold < moistureSensorVal && !waterPumpIsOn && waterLevel == "OK") {  
+//    if (currentMillis - prevSecTenMillis >= secTenInterval) {
+//      // digitalWrite(WaterPump, LOW);
+//      waterPumpIsOn = true;
+//    }
+//    // todo - water for ten seconds at a time and no more than twice a day?!?
+//    // digitalWrite(WaterPump, HIGH);
+//    waterPumpIsOn = true;
+//  }
+//  if (moistureThreshold > moistureSensorVal && waterPumpIsOn) {}    
 }
 
 void switchLights() {
