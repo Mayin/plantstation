@@ -53,40 +53,34 @@ const byte hygroPin = A1;
 const int moistureThreshold = 500; // <- made this up
 int moistureSensorVal;
 
-//=====For Water Level=========================
+//=====For Water===============================
 const byte waterSensorPin = A2;
 // todo - find right value for this
 const int waterLevelThreshold = 400; // <- made this up
 boolean waterPumpIsOn = false;
 int waterLevelVal;
+unsigned long wateringSeconds = 10000;
+unsigned long prevWatering = 0;
 String waterLevel = "OK";
 
 //=====For Timed Events=========================
-//long prevSecTenMillis = 0;
-//long secTenInterval = 10000;
-
 long prevMinOneMillis = 0;
 long minOneInterval = 60000;
-
 long prevMinFiveMillis = 0;
 long minFiveInterval = 300000;
-
 long prevHourTwelveMillis = 0;
 long hourTwelveInterval = 43200000;
 
 void setup() {
   pinMode(LightSwitch, OUTPUT);
-  Serial.begin(9600); 
-  Serial.println("PlantStation is warming up\n");
 
   myDHT.begin();
   Bridge.begin();
   Console.begin();
 
-  while (!Console) { ; }
+  while (!Console);
   Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nKeen is warming up.\n\n");
 
-  while (!Serial);
   delay(5000);
 }
 
@@ -106,6 +100,7 @@ void loop() {
     prevMinOneMillis = currentMillis;
     
     sendToKeen();  
+    waterPlants();
   }
   
   // these happen every five minutes (or so)
@@ -121,19 +116,29 @@ void loop() {
     
     waterPlants();
   }
+  
+  if (waterPumpIsOn && currentMillis >= prevWatering + 10000) {
+    waterPumpIsOn = false;
+    Console.println("Watering stopped");    
+  }
 }
 
 void waterPlants() {
-//  if (moistureThreshold < moistureSensorVal && !waterPumpIsOn && waterLevel == "OK") {  
-//    if (currentMillis - prevSecTenMillis >= secTenInterval) {
-//      // digitalWrite(WaterPump, LOW);
-//      waterPumpIsOn = true;
-//    }
-//    // todo - water for ten seconds at a time and no more than twice a day?!?
-//    // digitalWrite(WaterPump, HIGH);
-//    waterPumpIsOn = true;
-//  }
-//  if (moistureThreshold > moistureSensorVal && waterPumpIsOn) {}    
+
+  // todo - implement all the sensors (water level, moisture)
+  // todo - figure out how to send a water pump is on event for log even thou its off at time.
+  // todo - leave a trail that pump ran for event log
+  // todo - cleanup vars
+  
+  // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
+  
+  prevWatering = millis();
+  if (!waterPumpIsOn) {
+    waterPumpIsOn = true;
+    Console.println("Watering started");
+  }
+  
+
 }
 
 void switchLights() {
@@ -159,7 +164,7 @@ void readWaterLevelSensor() {
   waterLevelVal = analogRead(waterSensorPin);
   
   if (waterLevelVal < waterLevelThreshold) {
-    waterLevel = "LOW";
+   waterLevel = "LOW";
   } else {
    waterLevel = "OK";
   }    
@@ -172,7 +177,6 @@ void readAirMeasurements() {
   am.heatIndex = myDHT.computeHeatIndex(am.tempAirF, am.humidityAir);
   
   if (am.humidityAir == 0  && am.tempAirC == 0) {
-    Serial.println("Failed to read from DHT sensor.");
     Console.println("Failed to read from DHT sensor.");
   }
 }
@@ -185,17 +189,14 @@ void readSoilMeasurements() {
   if ( !myPT.search(addr)) {
       //no more sensors on chain, reset search
       myPT.reset_search();
-      Serial.println("No probe sensor detected");
       Console.println("No probe sensor detected");
   }
 
   if ( OneWire::crc8( addr, 7) != addr[7]) {
-      Serial.println("CRC is not valid!");
       Console.println("CRC is not valid!");
   }
 
   if ( addr[0] != 0x10 && addr[0] != 0x28) {
-      Serial.print("Device is not recognized");
       Console.print("Device is not recognized");
   }
 
@@ -298,7 +299,6 @@ void outputEvent() {
   my_output += ";WaterPumptIsOn:";
   my_output += waterPumpIsOn;
 
-  Serial.println(my_output);
   Console.println(my_output);
 }
 
