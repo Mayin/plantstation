@@ -1,23 +1,23 @@
-//=====General Deployment Definitions==========
+//===== General deployment defs =================
 String appId = "Plant01";
 String location = "Dinning Room Window";
 
-//=====For private keys, params================
+//===== For private keys, params ================
 #include "params.h"
 
-//=====For Keen Integration====================
+//===== For Keen integration ====================
 #include "ApiClient.h"
 #include "KeenClient.h"
 KeenClient myKeen;
 
-//=====For writting to the console=============
+//===== For writting to the console =============
 #include "Bridge.h"
 #include "Console.h"
 
-//=====For 4 Relay Module======================
+//===== For 4 relay module ======================
 #define LightSwitch 4
 
-//=====For Probe Thermometer===================
+//===== For probe thermometer ===================
 #include "OneWire.h"
 const byte probePin = 3;
 OneWire myPT(probePin);
@@ -28,7 +28,7 @@ typedef struct my_soilmeasurement {
 } SoilMeasurement;
 SoilMeasurement sm;
 
-//=====For Digital Thermo, Humidity Sensor=====
+//===== For digital thermo, humidity sensor =====
 #include "DHT.h"
 const byte dhtPin = 2;
 DHT myDHT(dhtPin, DHT11);
@@ -41,19 +41,19 @@ typedef struct my_airmeasurement {
 } AirMeasurement;
 AirMeasurement am;
 
-//=====For photoresistor=======================
+//===== For photoresistor =======================
 const byte lightOnThreshold = 90;
 const byte lightPin = A0;
 boolean lightIsOn = false;
 int lightResistorVal;
 
-//=====For Hygrometer==========================
+//===== For hygrometer ==========================
 const byte hygroPin = A1;
 // todo - find right value for this
 const int moistureThreshold = 500; // <- made this up
 int moistureSensorVal;
 
-//=====For Water===============================
+//===== For water ===============================
 const byte waterSensorPin = A2;
 // todo - find right value for this
 const int waterLevelThreshold = 400; // <- made this up
@@ -63,7 +63,7 @@ unsigned long wateringSeconds = 10000;
 unsigned long prevWatering = 0;
 String waterLevel = "OK";
 
-//=====For Timed Events=========================
+//===== For timed events =========================
 long prevMinOneMillis = 0;
 long minOneInterval = 60000;
 long prevMinFiveMillis = 0;
