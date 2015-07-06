@@ -28,7 +28,7 @@ typedef struct my_soilmeasurement {
 } SoilMeasurement;
 SoilMeasurement sm;
 
-//===== For digital thermo, humidity sensor =====
+//===== For digital thermo/humidity sensor =====
 #include "DHT.h"
 const byte dhtPin = 2;
 DHT myDHT(dhtPin, DHT11);
@@ -50,26 +50,29 @@ int lightResistorVal;
 //===== For hygrometer ==========================
 const byte hygroPin = A1;
 // todo - find right value for this
-const int moistureThreshold = 500; // <- made this up
+const int moistureThreshold = 1000; // <- made this up
 int moistureSensorVal;
 
-//===== For water ===============================
+//===== For water level sensor ===================
 const byte waterSensorPin = A2;
 // todo - find right value for this
 const int waterLevelThreshold = 400; // <- made this up
-boolean waterPumpIsOn = false;
 int waterLevelVal;
+
+//===== For water pump ===========================
+boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 10000;
 unsigned long prevWatering = 0;
 String waterLevel = "OK";
 
 //===== For timed events =========================
-long prevMinOneMillis = 0;
-long minOneInterval = 60000;
-long prevMinFiveMillis = 0;
-long minFiveInterval = 300000;
-long prevHourTwelveMillis = 0;
-long hourTwelveInterval = 43200000;
+// todo - timed events use regule marers for 1 min 1 hour etc and divide blah
+unsigned long prevMinOneMillis = 0;
+unsigned long minOneInterval = 60000;
+unsigned long prevMinFiveMillis = 0;
+unsigned long minFiveInterval = 300000;
+unsigned long prevHourTwelveMillis = 0;
+unsigned long hourTwelveInterval = 43200000;
 
 void setup() {
   pinMode(LightSwitch, OUTPUT);
@@ -100,7 +103,7 @@ void loop() {
     prevMinOneMillis = currentMillis;
     
     sendToKeen();  
-    waterPlants();
+    waterPlantStarts();
   }
   
   // these happen every five minutes (or so)
@@ -114,31 +117,31 @@ void loop() {
   if (currentMillis - prevHourTwelveMillis > hourTwelveInterval) {
     prevHourTwelveMillis = currentMillis;
     
-    waterPlants();
+    waterPlantStarts();
   }
-  
-  if (waterPumpIsOn && currentMillis >= prevWatering + 10000) {
-    waterPumpIsOn = false;
-    Console.println("Watering stopped");    
-  }
+  waterPlantStops(currentMillis);  
 }
 
-void waterPlants() {
-
-  // todo - implement all the sensors (water level, moisture)
+void waterPlantStarts() {
   // todo - figure out how to send a water pump is on event for log even thou its off at time.
-  // todo - leave a trail that pump ran for event log
-  // todo - cleanup vars
-  
-  // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
-  
-  prevWatering = millis();
-  if (!waterPumpIsOn) {
+  if (!waterPumpIsOn && waterLevel == "OK" && moistureThreshold > moistureSensorVal) {
+    prevWatering = millis();
     waterPumpIsOn = true;
     Console.println("Watering started");
   }
-  
+}
 
+void waterPlantStops(unsigned long currentMillis) {
+    if (waterPumpIsOn && currentMillis >= prevWatering + wateringSeconds) {
+    waterPumpIsOn = false;
+    Console.println("Watering stopped");    
+  } else if (waterPumpIsOn && moistureThreshold < moistureSensorVal) {
+    waterPumpIsOn = false;
+    Console.println("Watering stopped");
+  } else if (waterPumpIsOn && waterLevel == "LOW") {
+    waterPumpIsOn = false;
+    Console.println("Watering stopped");
+  }  
 }
 
 void switchLights() {
