@@ -56,14 +56,14 @@ int moistureSensorVal;
 //===== For water level sensor ===================
 const byte waterSensorPin = A2;
 // todo - find right value for this
-const int waterLevelThreshold = 400; // <- made this up
+const int waterLevelThreshold = 300; // <- made this up
 int waterLevelVal;
+String waterLevelStatus = "OK";
 
 //===== For water pump ===========================
 boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 10000;
 unsigned long prevWatering = 0;
-String waterLevel = "OK";
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
@@ -124,7 +124,7 @@ void loop() {
 
 void waterPlantStarts() {
   // todo - figure out how to send a water pump is on event for log even thou its off at time.
-  if (!waterPumpIsOn && waterLevel == "OK" && moistureThreshold > moistureSensorVal) {
+  if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureThreshold > moistureSensorVal) {
     prevWatering = millis();
     waterPumpIsOn = true;
     Console.println("Watering started");
@@ -138,7 +138,7 @@ void waterPlantStops(unsigned long currentMillis) {
   } else if (waterPumpIsOn && moistureThreshold < moistureSensorVal) {
     waterPumpIsOn = false;
     Console.println("Watering stopped");
-  } else if (waterPumpIsOn && waterLevel == "LOW") {
+  } else if (waterPumpIsOn && waterLevelStatus == "LOW") {
     waterPumpIsOn = false;
     Console.println("Watering stopped");
   }  
@@ -167,9 +167,9 @@ void readWaterLevelSensor() {
   waterLevelVal = analogRead(waterSensorPin);
   
   if (waterLevelVal < waterLevelThreshold) {
-   waterLevel = "LOW";
+   waterLevelStatus = "LOW";
   } else {
-   waterLevel = "OK";
+   waterLevelStatus = "OK";
   }    
 }
 
@@ -246,8 +246,10 @@ void sendToKeen() {
   my_output += ",\"Moisture\":";
   my_output += moistureSensorVal;
   my_output += ",\"WaterLevelStatus\":\"";
-  my_output += waterLevel;
-  my_output += "\",\"Location\":\"";
+  my_output += waterLevelStatus;
+  my_output += "\",\"WaterLevelValue\":";
+  my_output += waterLevelVal;
+  my_output += ",\"Location\":\"";
   my_output += location;
   my_output += "\",\"LightIsOn\":";
   my_output += lightIsOn;
@@ -294,7 +296,9 @@ void outputEvent() {
   my_output += ";Moisture:";
   my_output += moistureSensorVal;
   my_output += ";WaterLevelStatus:";
-  my_output += waterLevel;
+  my_output += waterLevelStatus;
+  my_output += ";WaterLevelValue:";
+  my_output += waterLevelVal;
   my_output += ";LightIsOn:";
   my_output += lightIsOn;
   my_output += ";Location:";  
