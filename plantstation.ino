@@ -62,7 +62,7 @@ String waterLevelStatus = "OK";
 
 //===== For water pump ===========================
 boolean waterPumpIsOn = false;
-unsigned long wateringSeconds = 10000;
+unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
 
 //===== For timed events =========================
