@@ -156,17 +156,20 @@ void switchLights() {
 }
 
 void readLightResistor() {
-  lightResistorVal = analogRead(lightPin);
+  int val = analogRead(lightPin);
+  lightResistorVal = map(val, 60, 550, 0, 100);
 }
 
 void readMoistureSensor() {
-  moistureSensorVal = analogRead(hygroPin);
+  int val = analogRead(hygroPin);
+  moistureSensorVal = map(val, 110, 960, 0, 100);
 }
 
 void readWaterLevelSensor() {
-  waterLevelVal = analogRead(waterSensorPin);
+  int val = analogRead(waterSensorPin);
+  waterLevelVal = map(val, 90, 310, 0, 100);
   
-  if (waterLevelVal < waterLevelThreshold) {
+  if (val < waterLevelThreshold) {
    waterLevelStatus = "LOW";
   } else {
    waterLevelStatus = "OK";
