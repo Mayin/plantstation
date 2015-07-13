@@ -42,6 +42,7 @@ typedef struct my_airmeasurement {
 AirMeasurement am;
 
 //===== For photoresistor =======================
+// todo - change the threshold to base100
 const byte lightOnThreshold = 90;
 const byte lightPin = A0;
 boolean lightIsOn = false;
@@ -50,12 +51,14 @@ int lightResistorVal;
 //===== For hygrometer ==========================
 const byte hygroPin = A1;
 // todo - find right value for this
+// todo - change the threshold to base100
 const int moistureThreshold = 1000; // <- made this up
 int moistureSensorVal;
 
 //===== For water level sensor ===================
 const byte waterSensorPin = A2;
 // todo - find right value for this
+// todo - change the threshold to base100
 const int waterLevelThreshold = 300; // <- made this up
 int waterLevelVal;
 String waterLevelStatus = "OK";
@@ -124,6 +127,7 @@ void loop() {
 
 void waterPlantStarts() {
   // todo - figure out how to send a water pump is on event for log even thou its off at time.
+  // todo - change the threshold to base100
   if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureThreshold > moistureSensorVal) {
     prevWatering = millis();
     waterPumpIsOn = true;
@@ -135,6 +139,7 @@ void waterPlantStops(unsigned long currentMillis) {
     if (waterPumpIsOn && currentMillis >= prevWatering + wateringSeconds) {
     waterPumpIsOn = false;
     Console.println("Watering stopped");    
+  // todo - change the threshold to base100
   } else if (waterPumpIsOn && moistureThreshold < moistureSensorVal) {
     waterPumpIsOn = false;
     Console.println("Watering stopped");
@@ -145,10 +150,12 @@ void waterPlantStops(unsigned long currentMillis) {
 }
 
 void switchLights() {
+  // todo - change the threshold to base100
   if (lightOnThreshold > lightResistorVal && !lightIsOn) {
     digitalWrite(LightSwitch, HIGH);
     lightIsOn = true;
   } 
+  // todo - change the threshold to base100
   if (lightOnThreshold < lightResistorVal && lightIsOn) {
     digitalWrite(LightSwitch, LOW);
     lightIsOn = false;
