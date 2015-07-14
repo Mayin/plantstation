@@ -91,7 +91,7 @@ void setup() {
 
   myDHT.begin();
   Bridge.begin();
-  Console.begin();
+  Console.begin();    
 
   while (!Console);
   Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nKeen is warming up.\n\n");
@@ -289,11 +289,11 @@ void sendToKeen() {
 void outputEvent() {  
   String my_output = "";
   // strings
-  my_output += "AppId:";                        my_output += appId;
-  my_output += ";Location:";                    my_output += location;
+  //my_output += "AppId:";                        my_output += appId;
+  //my_output += ";Location:";                    my_output += location;
   my_output += ";WaterLevelStatus:";            my_output += waterLevelStatus;
   // numerics
-  my_output += ";AirTemperatureCelcius:";       my_output += am.tempAirC;
+  //my_output += ";AirTemperatureCelcius:";       my_output += am.tempAirC;
   my_output += ";AirTemperatureFahrenheit:";    my_output += am.tempAirF;
   my_output += ";HeatIndex:";                   my_output += am.heatIndex;
   my_output += ";HumidityPercent:";             my_output += am.humidityAir;
@@ -302,12 +302,12 @@ void outputEvent() {
   my_output += ";LightIsOn:";                   my_output += lightIsOn;
   my_output += ";MoisturePercent:";             my_output += moisturePercent;
   my_output += ";MoistureValue:";               my_output += moistureSensorVal;
-  my_output += ";ProbeTemperatureCelcius:";     my_output += sm.tempSoilC;  
+  //my_output += ";ProbeTemperatureCelcius:";     my_output += sm.tempSoilC;  
   my_output += ";ProbeTemperatureFahrenheit:";  my_output += sm.tempSoilF;
   my_output += ";WaterLevelPercent:";           my_output += waterLevelPercent;
   my_output += ";WaterLevelValue:";             my_output += waterLevelVal;
   my_output += ";WaterPumptIsOn:";              my_output += waterPumpIsOn;
-  
+      
   Console.println(my_output);
 }
 
