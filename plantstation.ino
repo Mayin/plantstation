@@ -42,24 +42,25 @@ typedef struct my_airmeasurement {
 AirMeasurement am;
 
 //===== For photoresistor =======================
+boolean lightIsOn = false;
 byte lightPercent;
 const byte lightOnThreshold = 90;
 const byte lightPin = A0;
-boolean lightIsOn = false;
-int lightMaxVal = 550;
-int lightMinVal = 6; 
+const int lightMaxVal = 550;
+const int lightMinVal = 6; 
 int lightResistorVal;
 
 //===== For hygrometer ==========================
 byte moisturePercent;
 const byte hygroPin = A1;
 // todo - find right value for this
-const int moistureThreshold = 1000; // <- made this up
-int moistureMaxVal = 960;
-int moistureMinVal = 50; 
+const int moistureMaxVal = 960;
+const int moistureMinVal = 50; 
 int moistureSensorVal;
+int moistureThreshold = 1000; // <- made this up
 
 //===== For water level sensor ===================
+byte waterLevelPercent;
 const byte waterSensorPin = A2;
 // todo - find right value for this
 const int waterLevelThreshold = 300; // <- made this up
@@ -69,13 +70,15 @@ int waterMinVal = 90;
 String waterLevelStatus = "OK";
 
 //===== For water pump ===========================
+#define WaterPump 5
+const byte waterPumpPin = A3;
 boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
-unsigned long prevMinOneMillis = 0;
+unsigned long prevMinOneMillis = 0;    
 unsigned long minOneInterval = 60000;
 unsigned long prevMinFiveMillis = 0;
 unsigned long minFiveInterval = 300000;
@@ -84,6 +87,7 @@ unsigned long hourTwelveInterval = 43200000;
 
 void setup() {
   pinMode(LightSwitch, OUTPUT);
+  pinMode(WaterPump, OUTPUT);
 
   myDHT.begin();
   Bridge.begin();
@@ -135,6 +139,7 @@ void waterPlantStarts() {
   if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureThreshold > moistureSensorVal) {
     prevWatering = millis();
     waterPumpIsOn = true;
+    digitalWrite(WaterPump, HIGH);
     Console.println("Watering started");
   }
 }
@@ -142,12 +147,15 @@ void waterPlantStarts() {
 void waterPlantStops(unsigned long currentMillis) {
     if (waterPumpIsOn && currentMillis >= prevWatering + wateringSeconds) {
     waterPumpIsOn = false;
+    digitalWrite(WaterPump, LOW);
     Console.println("Watering stopped");    
   } else if (waterPumpIsOn && moistureThreshold < moistureSensorVal) {
     waterPumpIsOn = false;
+    digitalWrite(WaterPump, LOW);
     Console.println("Watering stopped");
   } else if (waterPumpIsOn && waterLevelStatus == "LOW") {
     waterPumpIsOn = false;
+    digitalWrite(WaterPump, LOW);
     Console.println("Watering stopped");
   }  
 }
@@ -174,10 +182,10 @@ void readMoistureSensor() {
 }
 
 void readWaterLevelSensor() {
-  int val = analogRead(waterSensorPin);
-  waterLevelVal = map(val, waterMinVal, waterMaxVal, 0, 100);
+  waterLevelVal = analogRead(waterSensorPin);
+  waterLevelPercent = map(waterLevelVal, waterMinVal, waterMaxVal, 0, 100);
   
-  if (val < waterLevelThreshold) {
+  if (waterLevelVal < waterLevelThreshold) {
    waterLevelStatus = "LOW";
   } else {
    waterLevelStatus = "OK";
@@ -255,6 +263,7 @@ void sendToKeen() {
   my_output += ",\"MoistureValue\":";               my_output += moistureSensorVal;
   my_output += ",\"ProbeTemperatureCelcius\":";     my_output += sm.tempSoilC;
   my_output += ",\"ProbeTemperatureFahrenheit\":";  my_output += sm.tempSoilF;
+  my_output += ",\"WaterLevelPercent\":";           my_output += waterLevelPercent;
   my_output += ",\"WaterLevelValue\":";             my_output += waterLevelVal;
   my_output += ",\"WaterPumptIsOn\":";              my_output += waterPumpIsOn;
   my_output += "}";
@@ -295,6 +304,7 @@ void outputEvent() {
   my_output += ";MoistureValue:";               my_output += moistureSensorVal;
   my_output += ";ProbeTemperatureCelcius:";     my_output += sm.tempSoilC;  
   my_output += ";ProbeTemperatureFahrenheit:";  my_output += sm.tempSoilF;
+  my_output += ";WaterLevelPercent:";           my_output += waterLevelPercent;
   my_output += ";WaterLevelValue:";             my_output += waterLevelVal;
   my_output += ";WaterPumptIsOn:";              my_output += waterPumpIsOn;
   
