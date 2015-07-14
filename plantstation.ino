@@ -14,9 +14,6 @@ KeenClient myKeen;
 #include "Bridge.h"
 #include "Console.h"
 
-//===== For 4 relay module ======================
-#define LightSwitch 4
-
 //===== For probe thermometer ===================
 #include "OneWire.h"
 const byte probePin = 3;
@@ -42,39 +39,43 @@ typedef struct my_airmeasurement {
 AirMeasurement am;
 
 //===== For photoresistor =======================
-boolean lightIsOn = false;
 byte lightPercent;
-const byte lightOnThreshold = 90;
 const byte lightPin = A0;
-const int lightMaxVal = 550;
-const int lightMinVal = 6; 
 int lightResistorVal;
 
 //===== For hygrometer ==========================
 byte moisturePercent;
 const byte hygroPin = A1;
-// todo - find right value for this
+int moistureSensorVal;
+
+//===== For moisture readings ====================
+// todo - find right value for these
 const int moistureMaxVal = 960;
 const int moistureMinVal = 50; 
-int moistureSensorVal;
 int moistureThreshold = 1000; // <- made this up
 
 //===== For water level sensor ===================
 byte waterLevelPercent;
 const byte waterSensorPin = A2;
-// todo - find right value for this
-const int waterLevelThreshold = 300; // <- made this up
 int waterLevelVal;
-int waterMaxVal = 310;
-int waterMinVal = 90; 
 String waterLevelStatus = "OK";
 
+//===== For light switch =========================
+const byte lightSwitchPin = 4;
+const byte lightOnThreshold = 90;
+const int lightMaxVal = 550;
+const int lightMinVal = 6; 
+boolean lightIsOn = false;
+
 //===== For water pump ===========================
-#define WaterPump 5
 const byte waterPumpPin = A3;
+// todo - find right value for this
+const int waterLevelThreshold = 300; // <- made this up
 boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
+int waterMaxVal = 310;
+int waterMinVal = 90; 
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
@@ -86,8 +87,8 @@ unsigned long prevHourTwelveMillis = 0;
 unsigned long hourTwelveInterval = 43200000;
 
 void setup() {
-  pinMode(LightSwitch, OUTPUT);
-  pinMode(WaterPump, OUTPUT);
+  pinMode(lightSwitchPin, OUTPUT);
+  pinMode(waterPumpPin, OUTPUT);
 
   myDHT.begin();
   Bridge.begin();
@@ -109,7 +110,7 @@ void loop() {
   readWaterLevelSensor();  
   
   outputEvent();
-  
+
   // these happen every minute (or so)
   if (currentMillis - prevMinOneMillis > minOneInterval) {
     prevMinOneMillis = currentMillis;
@@ -139,7 +140,7 @@ void waterPlantStarts() {
   if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureThreshold > moistureSensorVal) {
     prevWatering = millis();
     waterPumpIsOn = true;
-    digitalWrite(WaterPump, HIGH);
+    digitalWrite(waterPumpPin, HIGH);
     Console.println("Watering started");
   }
 }
@@ -147,26 +148,26 @@ void waterPlantStarts() {
 void waterPlantStops(unsigned long currentMillis) {
     if (waterPumpIsOn && currentMillis >= prevWatering + wateringSeconds) {
     waterPumpIsOn = false;
-    digitalWrite(WaterPump, LOW);
+    digitalWrite(waterPumpPin, LOW);
     Console.println("Watering stopped");    
   } else if (waterPumpIsOn && moistureThreshold < moistureSensorVal) {
     waterPumpIsOn = false;
-    digitalWrite(WaterPump, LOW);
+    digitalWrite(waterPumpPin, LOW);
     Console.println("Watering stopped");
   } else if (waterPumpIsOn && waterLevelStatus == "LOW") {
     waterPumpIsOn = false;
-    digitalWrite(WaterPump, LOW);
+    digitalWrite(waterPumpPin, LOW);
     Console.println("Watering stopped");
   }  
 }
 
 void switchLights() {
   if (lightOnThreshold > lightResistorVal && !lightIsOn) {
-    digitalWrite(LightSwitch, HIGH);
+    digitalWrite(lightSwitchPin, HIGH);
     lightIsOn = true;
   } 
   if (lightOnThreshold < lightResistorVal && lightIsOn) {
-    digitalWrite(LightSwitch, LOW);
+    digitalWrite(lightSwitchPin, LOW);
     lightIsOn = false;
   }   
 }
@@ -204,7 +205,6 @@ void readAirMeasurements() {
 }
 
 void readSoilMeasurements() {
-
   byte data[12];
   byte addr[8];
 
@@ -245,7 +245,6 @@ void readSoilMeasurements() {
 }
 
 void sendToKeen() {  
-
   String my_output = "{";
   // strings
   my_output += "\"AppId\":\"";                      my_output += appId;             my_output += "\"";
