@@ -50,8 +50,8 @@ int moistureSensorVal;
 
 //===== For moisture readings ====================
 // todo - find right value for these
-const int moistureMaxVal = 960;
-const int moistureMinVal = 50; 
+const int moistureMaxVal = 453;
+const int moistureMinVal = 799; 
 int moistureThreshold = 1000; // <- made this up
 
 //===== For water level sensor ===================
@@ -74,8 +74,8 @@ const int waterLevelThreshold = 300; // <- made this up
 boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
-int waterMaxVal = 310;
-int waterMinVal = 90; 
+int waterMaxVal = 369;
+int waterMinVal = 123; 
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
