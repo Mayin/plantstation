@@ -50,8 +50,8 @@ int moistureSensorVal;
 
 //===== For moisture readings ====================
 // todo - find right value for these
-const int moistureMaxVal = 453;
-const int moistureMinVal = 799; 
+const int moistureMaxVal = 255;
+const int moistureMinVal = 878; 
 int moistureThreshold = 1000; // <- made this up
 
 //===== For water level sensor ===================
@@ -70,12 +70,12 @@ boolean lightIsOn = false;
 //===== For water pump ===========================
 const byte waterPumpPin = A3;
 // todo - find right value for this
-const int waterLevelThreshold = 300; // <- made this up
+const int waterLevelThreshold = 300; // <- made this up    
 boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
 int waterMaxVal = 369;
-int waterMinVal = 123; 
+int waterMinVal = 110;   
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
@@ -179,7 +179,7 @@ void readLightResistor() {
 
 void readMoistureSensor() {
   moistureSensorVal = analogRead(hygroPin);
-  moisturePercent = map(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
+  moisturePercent = reversemap(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
 }
 
 void readWaterLevelSensor() {
@@ -310,3 +310,21 @@ void outputEvent() {
   Console.println(my_output);
 }
 
+long reversemap(long x, long in_min, long in_max, long out_min, long out_max)
+{
+  return (in_min - x) * out_max / (in_min - in_max);
+}
+
+/*
+const int moistureMaxVal = 453;
+const int moistureMinVal = 799; 
+range = 346 (.5 = 173)
+626
+
+173
+346
+
+799 ------------------------626 ------------------------ 453
+  0 ------------------------ 50 ------------------------ 100
+
+*/
