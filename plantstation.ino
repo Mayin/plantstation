@@ -46,12 +46,13 @@ int lightResistorVal;
 //===== For hygrometer ==========================
 byte moisturePercent;
 const byte hygroPin = A1;
+const byte hygroPower = A3;
 int moistureSensorVal;
 
 //===== For moisture readings ====================
 // todo - find right value for these
 const int moistureMaxVal = 255;
-const int moistureMinVal = 878; 
+const int moistureMinVal = 982; 
 int moistureThreshold = 1000; // <- made this up
 
 //===== For water level sensor ===================
@@ -63,7 +64,7 @@ String waterLevelStatus = "OK";
 //===== For light switch =========================
 const byte lightSwitchPin = 4;
 const byte lightOnThreshold = 90;
-const int lightMaxVal = 550;
+const int lightMaxVal = 550;  
 const int lightMinVal = 6; 
 boolean lightIsOn = false;
 
@@ -89,6 +90,7 @@ unsigned long hourTwelveInterval = 43200000;
 void setup() {
   pinMode(lightSwitchPin, OUTPUT);
   pinMode(waterPumpPin, OUTPUT);
+  pinMode(hygroPower, OUTPUT);
 
   myDHT.begin();
   Bridge.begin();
@@ -97,7 +99,14 @@ void setup() {
   while (!Console);
   Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nKeen is warming up.\n\n");
 
+  digitalWrite(hygroPower, HIGH);
+
   delay(5000);
+  
+  // Because we need initial moisture readings
+  readMoistureSensor();
+  
+  digitalWrite(hygroPower, LOW);
 }
 
 void loop() {
@@ -106,7 +115,6 @@ void loop() {
   readAirMeasurements();
   readSoilMeasurements();
   readLightResistor();
-  readMoistureSensor();  
   readWaterLevelSensor();  
   
   outputEvent();
@@ -123,6 +131,7 @@ void loop() {
   if (currentMillis - prevMinFiveMillis > minFiveInterval) {
     prevMinFiveMillis = currentMillis;
     
+    readMoistureSensor();  
     switchLights();
   }
 
@@ -178,7 +187,10 @@ void readLightResistor() {
 }
 
 void readMoistureSensor() {
+  digitalWrite(hygroPower, HIGH);
+  delay(1000); // nasty hack to wait for moisture drivers
   moistureSensorVal = analogRead(hygroPin);
+  digitalWrite(hygroPower, LOW);
   moisturePercent = reversemap(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
 }
 
