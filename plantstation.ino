@@ -75,8 +75,8 @@ const int waterLevelThreshold = 300; // <- made this up
 boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
-int waterMaxVal = 369;
-int waterMinVal = 110;   
+int waterMaxVal = 690;
+int waterMinVal = 0;   
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
