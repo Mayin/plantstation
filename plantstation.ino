@@ -46,7 +46,7 @@ int lightResistorVal;
 //===== For hygrometer ==========================
 byte moisturePercent;
 const byte hygroPin = A1;
-const byte hygroPower = A3;
+const byte hygroPower = A15;
 int moistureSensorVal;
 
 //===== For moisture readings ====================
@@ -65,7 +65,7 @@ String waterLevelStatus = "OK";
 const byte lightSwitchPin = 4;
 const byte lightOnThreshold = 90;
 const int lightMaxVal = 550;  
-const int lightMinVal = 6; 
+const int lightMinVal = 0; 
 boolean lightIsOn = false;
 
 //===== For water pump ===========================
