@@ -53,30 +53,30 @@ int moistureSensorVal;
 // todo - find right value for these
 const int moistureMaxVal = 255;
 const int moistureMinVal = 982; 
-int moistureThreshold = 1000; // <- made this up
+const byte moistureThreshold = 30; // <- made this up, to %
 
 //===== For water level sensor ===================
 byte waterLevelPercent;
-const byte waterSensorPin = A2;
+const byte waterSensorPin = A3;
 int waterLevelVal;
 String waterLevelStatus = "OK";
 
 //===== For light switch =========================
 const byte lightSwitchPin = 4;
-const byte lightOnThreshold = 90;
+const byte lightOnThreshold = 20;
 const int lightMaxVal = 550;  
 const int lightMinVal = 0; 
 boolean lightIsOn = false;
 
 //===== For water pump ===========================
-const byte waterPumpPin = A3;
+const byte waterPumpPin = A5;
 // todo - find right value for this
-const int waterLevelThreshold = 300; // <- made this up    
+const int waterLevelThreshold = 20; // <- made this up    
 boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
 int waterMaxVal = 690;
-int waterMinVal = 0;   
+int waterMinVal = 325;   
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
@@ -92,6 +92,8 @@ void setup() {
   pinMode(waterPumpPin, OUTPUT);
   pinMode(hygroPower, OUTPUT);
 
+  digitalWrite(waterPumpPin, LOW);
+
   myDHT.begin();
   Bridge.begin();
   Console.begin();    
@@ -99,14 +101,12 @@ void setup() {
   while (!Console);
   Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nKeen is warming up.\n\n");
 
-  digitalWrite(hygroPower, HIGH);
-
-  delay(5000);
-  
   // Because we need initial moisture readings
-  readMoistureSensor();
-  
+  digitalWrite(hygroPower, HIGH);
+  delay(5000);
+  readMoistureSensor();  
   digitalWrite(hygroPower, LOW);
+  // Because end
 }
 
 void loop() {
@@ -124,7 +124,6 @@ void loop() {
     prevMinOneMillis = currentMillis;
     
     sendToKeen();  
-    waterPlantStarts();
   }
   
   // these happen every five minutes (or so)
@@ -132,6 +131,7 @@ void loop() {
     prevMinFiveMillis = currentMillis;
     
     readMoistureSensor();  
+    waterPlantStarts();
     switchLights();
   }
 
@@ -146,7 +146,7 @@ void loop() {
 
 void waterPlantStarts() {
   // todo - figure out how to send a water pump is on event for log even thou its off at time.
-  if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureThreshold > moistureSensorVal) {
+  if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureThreshold > moisturePercent) {
     prevWatering = millis();
     waterPumpIsOn = true;
     digitalWrite(waterPumpPin, HIGH);
@@ -159,7 +159,7 @@ void waterPlantStops(unsigned long currentMillis) {
     waterPumpIsOn = false;
     digitalWrite(waterPumpPin, LOW);
     Console.println("Watering stopped");    
-  } else if (waterPumpIsOn && moistureThreshold < moistureSensorVal) {
+  } else if (waterPumpIsOn && moistureThreshold < moisturePercent) {
     waterPumpIsOn = false;
     digitalWrite(waterPumpPin, LOW);
     Console.println("Watering stopped");
@@ -171,11 +171,11 @@ void waterPlantStops(unsigned long currentMillis) {
 }
 
 void switchLights() {
-  if (lightOnThreshold > lightResistorVal && !lightIsOn) {
+  if (lightOnThreshold > lightPercent && !lightIsOn) {
     digitalWrite(lightSwitchPin, HIGH);
     lightIsOn = true;
   } 
-  if (lightOnThreshold < lightResistorVal && lightIsOn) {
+  if (lightOnThreshold < lightPercent && lightIsOn) {
     digitalWrite(lightSwitchPin, LOW);
     lightIsOn = false;
   }   
@@ -198,7 +198,7 @@ void readWaterLevelSensor() {
   waterLevelVal = analogRead(waterSensorPin);
   waterLevelPercent = map(waterLevelVal, waterMinVal, waterMaxVal, 0, 100);
   
-  if (waterLevelVal < waterLevelThreshold) {
+  if (waterLevelPercent < waterLevelThreshold) {
    waterLevelStatus = "LOW";
   } else {
    waterLevelStatus = "OK";
