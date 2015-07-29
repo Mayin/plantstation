@@ -63,7 +63,7 @@ String waterLevelStatus = "OK";
 
 //===== For light switch =========================
 const byte lightSwitchPin = 4;
-const byte lightOnThreshold = 20;
+const byte lightOnThreshold = 10;
 const int lightMaxVal = 550;  
 const int lightMinVal = 0; 
 boolean lightIsOn = false;
