@@ -50,14 +50,13 @@ const byte hygroPower = A15;
 int moistureSensorVal;
 
 //===== For moisture readings ====================
-// todo - find right value for these
 // Dry  0 - 300 
 // Humid 300 - 700
 // Wet 700 - 950
 // But freaking backwards!
-const int moistureMaxVal = 255;
-const int moistureMinVal = 982; 
-const byte moistureThreshold = 30; // <- made this up, to %
+const int moistureMaxVal = 0; //255;
+const int moistureMinVal = 950; //982; 
+const byte moistureThreshold = 28; // ~ 326
 
 //===== For water level sensor ===================
 byte waterLevelPercent;
@@ -80,7 +79,7 @@ boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
 int waterMaxVal = 690;
-int waterMinVal = 345;   
+int waterMinVal = 325;   
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
