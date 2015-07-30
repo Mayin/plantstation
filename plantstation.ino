@@ -51,6 +51,10 @@ int moistureSensorVal;
 
 //===== For moisture readings ====================
 // todo - find right value for these
+// Dry  0 - 300 
+// Humid 300 - 700
+// Wet 700 - 950
+// But freaking backwards!
 const int moistureMaxVal = 255;
 const int moistureMinVal = 982; 
 const byte moistureThreshold = 30; // <- made this up, to %
@@ -64,7 +68,7 @@ String waterLevelStatus = "OK";
 //===== For light switch =========================
 const byte lightSwitchPin = 4;
 const byte lightOnThreshold = 10;
-const int lightMaxVal = 550;  
+const int lightMaxVal = 250;  
 const int lightMinVal = 0; 
 boolean lightIsOn = false;
 
@@ -76,7 +80,7 @@ boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
 int waterMaxVal = 690;
-int waterMinVal = 325;   
+int waterMinVal = 345;   
 
 //===== For timed events =========================
 // todo - timed events use regule marers for 1 min 1 hour etc and divide blah
@@ -130,7 +134,6 @@ void loop() {
   if (currentMillis - prevMinFiveMillis > minFiveInterval) {
     prevMinFiveMillis = currentMillis;
     
-    readMoistureSensor();  
     waterPlantStarts();
     switchLights();
   }
@@ -139,6 +142,7 @@ void loop() {
   if (currentMillis - prevHourTwelveMillis > hourTwelveInterval) {
     prevHourTwelveMillis = currentMillis;
     
+    readMoistureSensor();  
     waterPlantStarts();
   }
   waterPlantStops(currentMillis);  
