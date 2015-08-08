@@ -1,6 +1,7 @@
 //===== General deployment defs =================
 String appId = "Plant01";
-String location = "Dinning Room Window";
+//String location = "Dinning Room Window";
+String location = "Living Room Side Table";
 
 //===== For private keys, params ================
 #include "params.h"
@@ -10,7 +11,7 @@ String location = "Dinning Room Window";
 #include "KeenClient.h"
 KeenClient myKeen;
 
-//===== For writting to the console =============
+//===== For writing to the console =============
 #include "Bridge.h"
 #include "Console.h"
 
@@ -50,13 +51,10 @@ const byte hygroPower = A15;
 int moistureSensorVal;
 
 //===== For moisture readings ====================
-// Dry  0 - 300 
-// Humid 300 - 700
-// Wet 700 - 950
-// But freaking backwards!
 const int moistureMaxVal = 0; //255;
 const int moistureMinVal = 950; //982; 
 const byte moistureThreshold = 28; // ~ 326
+String moistureStatus;
 
 //===== For water level sensor ===================
 byte waterLevelPercent;
@@ -66,7 +64,7 @@ String waterLevelStatus = "OK";
 
 //===== For light switch =========================
 const byte lightSwitchPin = 4;
-const byte lightOnThreshold = 10;
+const byte lightOnThreshold = 30;
 const int lightMaxVal = 250;  
 const int lightMinVal = 0; 
 boolean lightIsOn = false;
@@ -78,7 +76,7 @@ const int waterLevelThreshold = 20; // <- made this up
 boolean waterPumpIsOn = false;
 unsigned long wateringSeconds = 61000;
 unsigned long prevWatering = 0;
-int waterMaxVal = 690;
+int waterMaxVal = 450;
 int waterMinVal = 325;   
 
 //===== For timed events =========================
@@ -133,6 +131,7 @@ void loop() {
   if (currentMillis - prevMinFiveMillis > minFiveInterval) {
     prevMinFiveMillis = currentMillis;
     
+    readMoistureSensor();  
     waterPlantStarts();
     switchLights();
   }
@@ -141,7 +140,6 @@ void loop() {
   if (currentMillis - prevHourTwelveMillis > hourTwelveInterval) {
     prevHourTwelveMillis = currentMillis;
     
-    readMoistureSensor();  
     waterPlantStarts();
   }
   waterPlantStops(currentMillis);  
@@ -194,7 +192,22 @@ void readMoistureSensor() {
   delay(1000); // nasty hack to wait for moisture drivers
   moistureSensorVal = analogRead(hygroPin);
   digitalWrite(hygroPower, LOW);
-  moisturePercent = reversemap(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
+  moisturePercent = map(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
+
+  // Dry  0 - 300 
+// Humid 300 - 700
+// Wet 700 - 950
+// moistureStatus
+  if (moistureSensorVal > 0 && moistureSensorVal < 300) {
+    moistureStatus = "Dry";
+  } else if (moistureSensorVal >= 300 && moistureSensorVal < 700) {
+    moistureStatus = "Humid";
+  } else if (moistureSensorVal >= 700) {
+    moistureStatus = "Wet";
+  } else {
+    moistureStatus = "ERR";
+  }
+
 }
 
 void readWaterLevelSensor() {
@@ -265,6 +278,7 @@ void sendToKeen() {
   my_output += "\"AppId\":\"";                      my_output += appId;             my_output += "\"";
   my_output += ",\"Location\":\"";                  my_output += location;          my_output += "\"";
   my_output += ",\"WaterLevelStatus\":\"";          my_output += waterLevelStatus;  my_output += "\"";
+  my_output += ",\"MoistureStatus\":\"";              my_output += moistureStatus;  my_output += "\"";
   // numerics
   my_output += ",\"AirTemperatureCelcius\":";       my_output += am.tempAirC;
   my_output += ",\"AirTemperatureFahrenheit\":";    my_output += am.tempAirF;
@@ -306,6 +320,7 @@ void outputEvent() {
   //my_output += "AppId:";                        my_output += appId;
   //my_output += ";Location:";                    my_output += location;
   my_output += ";WaterLevelStatus:";            my_output += waterLevelStatus;
+  my_output += ";MoistureStatus:";               my_output += moistureStatus;
   // numerics
   //my_output += ";AirTemperatureCelcius:";       my_output += am.tempAirC;
   my_output += ";AirTemperatureFahrenheit:";    my_output += am.tempAirF;
