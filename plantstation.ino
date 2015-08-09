@@ -59,6 +59,7 @@ String moistureStatus;
 //===== For water level sensor ===================
 byte waterLevelPercent;
 const byte waterSensorPin = A3;
+const byte waterSensorPower = A14;
 int waterLevelVal;
 String waterLevelStatus = "OK";
 
@@ -92,6 +93,7 @@ void setup() {
   pinMode(lightSwitchPin, OUTPUT);
   pinMode(waterPumpPin, OUTPUT);
   pinMode(hygroPower, OUTPUT);
+  pinMode(waterSensorPower, OUTPUT);
 
   digitalWrite(waterPumpPin, LOW);
 
@@ -102,28 +104,34 @@ void setup() {
   while (!Console);
   Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nKeen is warming up.\n\n");
 
-  // Because we need initial moisture readings
+  // Because we need initial moisture and water level readings
   digitalWrite(hygroPower, HIGH);
+  digitalWrite(waterSensorPower, HIGH);
   delay(5000);
   readMoistureSensor();  
+  readWaterLevelSensor();  
   digitalWrite(hygroPower, LOW);
+  digitalWrite(waterSensorPower, LOW);
   // Because end
+
+  readAirMeasurements();
+  readSoilMeasurements();    
+  readLightResistor();
+
 }
 
 void loop() {
   unsigned long currentMillis = millis();
-  
-  readAirMeasurements();
-  readSoilMeasurements();
-  readLightResistor();
-  readWaterLevelSensor();  
-  
-  outputEvent();
 
   // these happen every minute (or so)
   if (currentMillis - prevMinOneMillis > minOneInterval) {
     prevMinOneMillis = currentMillis;
     
+    readAirMeasurements();
+    readSoilMeasurements();    
+    readLightResistor();
+
+    outputEvent();
     sendToKeen();  
   }
   
@@ -132,6 +140,7 @@ void loop() {
     prevMinFiveMillis = currentMillis;
     
     readMoistureSensor();  
+    readWaterLevelSensor();  
     waterPlantStarts();
     switchLights();
   }
@@ -151,7 +160,7 @@ void waterPlantStarts() {
     prevWatering = millis();
     waterPumpIsOn = true;
     digitalWrite(waterPumpPin, HIGH);
-    Console.println("Watering started");
+    Console.println("\nWatering started\n");
   }
 }
 
@@ -159,51 +168,56 @@ void waterPlantStops(unsigned long currentMillis) {
     if (waterPumpIsOn && currentMillis >= prevWatering + wateringSeconds) {
     waterPumpIsOn = false;
     digitalWrite(waterPumpPin, LOW);
-    Console.println("Watering stopped");    
+    Console.println("\nWatering stopped\n");    
   } else if (waterPumpIsOn && moistureThreshold < moisturePercent) {
     waterPumpIsOn = false;
     digitalWrite(waterPumpPin, LOW);
-    Console.println("Watering stopped");
+    Console.println("\nWatering stopped\n");
   } else if (waterPumpIsOn && waterLevelStatus == "LOW") {
     waterPumpIsOn = false;
     digitalWrite(waterPumpPin, LOW);
-    Console.println("Watering stopped");
+    Console.println("\nWatering stopped\n");
   }  
 }
 
 void switchLights() {
   if (lightOnThreshold > lightPercent && !lightIsOn) {
+    Console.println("\nArtificial lights on.\n");
     digitalWrite(lightSwitchPin, HIGH);
     lightIsOn = true;
   } 
   if (lightOnThreshold < lightPercent && lightIsOn) {
+    Console.println("\nArtificial lights off.\n");
     digitalWrite(lightSwitchPin, LOW);
     lightIsOn = false;
   }   
 }
 
 void readLightResistor() {
+  Console.println("\nReading light sensor.");
   lightResistorVal = analogRead(lightPin);
   lightPercent = map(lightResistorVal, lightMinVal, lightMaxVal, 0, 100);
+  Console.print("Light Percent: ");
+  Console.println(lightPercent);
 }
 
 void readMoistureSensor() {
+  Console.println("\nReading moisture sensor.");
   digitalWrite(hygroPower, HIGH);
   delay(1000); // nasty hack to wait for moisture drivers
   moistureSensorVal = analogRead(hygroPin);
   digitalWrite(hygroPower, LOW);
-  moisturePercent = map(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
+  moisturePercent = reversemap(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
+  Console.print("Moisture Percent: ");
+  Console.println(moisturePercent);
 
-  // Dry  0 - 300 
-// Humid 300 - 700
-// Wet 700 - 950
-// moistureStatus
+  // moistureStatus
   if (moistureSensorVal > 0 && moistureSensorVal < 300) {
-    moistureStatus = "Dry";
+    moistureStatus = "Wet";
   } else if (moistureSensorVal >= 300 && moistureSensorVal < 700) {
     moistureStatus = "Humid";
   } else if (moistureSensorVal >= 700) {
-    moistureStatus = "Wet";
+    moistureStatus = "Dry";
   } else {
     moistureStatus = "ERR";
   }
@@ -211,17 +225,26 @@ void readMoistureSensor() {
 }
 
 void readWaterLevelSensor() {
+  Console.println("\nReading Water Level.");
+  digitalWrite(waterSensorPower, HIGH);
+  delay(1000); // nasty hack to wait for moisture drivers
   waterLevelVal = analogRead(waterSensorPin);
+  digitalWrite(waterSensorPower, LOW);
   waterLevelPercent = map(waterLevelVal, waterMinVal, waterMaxVal, 0, 100);
+  Console.print("Water Level Percent: ");
+  Console.println(waterLevelPercent);
   
   if (waterLevelPercent < waterLevelThreshold) {
    waterLevelStatus = "LOW";
   } else {
    waterLevelStatus = "OK";
   }    
+  Console.print("Water level is: ");
+  Console.println(waterLevelStatus);
 }
 
 void readAirMeasurements() {
+  Console.println("\nReading air measurements.");
   am.humidityAir = myDHT.readHumidity();
   am.tempAirC = myDHT.readTemperature();
   am.tempAirF = myDHT.readTemperature(true);
@@ -230,9 +253,16 @@ void readAirMeasurements() {
   if (am.humidityAir == 0  && am.tempAirC == 0) {
     Console.println("Failed to read from DHT sensor.");
   }
+  Console.print("Air temp F is: ");
+  Console.println(am.tempAirF);
+  Console.print("Humidity is: ");
+  Console.println(am.humidityAir);
+  Console.print("Heat Index is: ");
+  Console.println(am.heatIndex);
 }
 
 void readSoilMeasurements() {
+  Console.println("\nReading soil measurements.");
   byte data[12];
   byte addr[8];
 
@@ -270,9 +300,13 @@ void readSoilMeasurements() {
   float tempRead = ((MSB << 8) | LSB); //using two's compliment
   sm.tempSoilC = tempRead / 16;
   sm.tempSoilF = sm.tempSoilC*9/5+32;
+
+  Console.print("Soil temp F is: ");
+  Console.println(sm.tempSoilF);
 }
 
 void sendToKeen() {  
+  Console.print("\nSending data to Keen.io.");
   String my_output = "{";
   // strings
   my_output += "\"AppId\":\"";                      my_output += appId;             my_output += "\"";
@@ -315,7 +349,7 @@ void sendToKeen() {
 }
 
 void outputEvent() {  
-  String my_output = "";
+  String my_output = "\n";
   // strings
   //my_output += "AppId:";                        my_output += appId;
   //my_output += ";Location:";                    my_output += location;
