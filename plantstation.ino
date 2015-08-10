@@ -113,11 +113,6 @@ void setup() {
   digitalWrite(hygroPower, LOW);
   digitalWrite(waterSensorPower, LOW);
   // Because end
-
-  readAirMeasurements();
-  readSoilMeasurements();    
-  readLightResistor();
-
 }
 
 void loop() {
@@ -126,7 +121,7 @@ void loop() {
   // these happen every minute (or so)
   if (currentMillis - prevMinOneMillis > minOneInterval) {
     prevMinOneMillis = currentMillis;
-    
+
     readAirMeasurements();
     readSoilMeasurements();    
     readLightResistor();
@@ -141,7 +136,7 @@ void loop() {
     
     readMoistureSensor();  
     readWaterLevelSensor();  
-    waterPlantStarts();
+    //waterPlantStarts();
     switchLights();
   }
 
@@ -155,12 +150,11 @@ void loop() {
 }
 
 void waterPlantStarts() {
-  // todo - figure out how to send a water pump is on event for log even thou its off at time.
   if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureThreshold > moisturePercent) {
     prevWatering = millis();
     waterPumpIsOn = true;
     digitalWrite(waterPumpPin, HIGH);
-    Console.println("\nWatering started\n");
+    Console.println("\n Watering started\n");
   }
 }
 
@@ -168,48 +162,42 @@ void waterPlantStops(unsigned long currentMillis) {
     if (waterPumpIsOn && currentMillis >= prevWatering + wateringSeconds) {
     waterPumpIsOn = false;
     digitalWrite(waterPumpPin, LOW);
-    Console.println("\nWatering stopped\n");    
+    Console.println("\n Watering stopped\n");    
   } else if (waterPumpIsOn && moistureThreshold < moisturePercent) {
     waterPumpIsOn = false;
     digitalWrite(waterPumpPin, LOW);
-    Console.println("\nWatering stopped\n");
+    Console.println("\n Watering stopped\n");
   } else if (waterPumpIsOn && waterLevelStatus == "LOW") {
     waterPumpIsOn = false;
     digitalWrite(waterPumpPin, LOW);
-    Console.println("\nWatering stopped\n");
+    Console.println("\n Watering stopped\n");
   }  
 }
 
 void switchLights() {
   if (lightOnThreshold > lightPercent && !lightIsOn) {
-    Console.println("\nArtificial lights on.\n");
+    Console.println("\n Turning lights on.\n");
     digitalWrite(lightSwitchPin, HIGH);
     lightIsOn = true;
   } 
   if (lightOnThreshold < lightPercent && lightIsOn) {
-    Console.println("\nArtificial lights off.\n");
+    Console.println("\n Turning lights off.\n");
     digitalWrite(lightSwitchPin, LOW);
     lightIsOn = false;
   }   
 }
 
 void readLightResistor() {
-  Console.println("\nReading light sensor.");
   lightResistorVal = analogRead(lightPin);
   lightPercent = map(lightResistorVal, lightMinVal, lightMaxVal, 0, 100);
-  Console.print("Light Percent: ");
-  Console.println(lightPercent);
 }
 
 void readMoistureSensor() {
-  Console.println("\nReading moisture sensor.");
   digitalWrite(hygroPower, HIGH);
   delay(1000); // nasty hack to wait for moisture drivers
   moistureSensorVal = analogRead(hygroPin);
   digitalWrite(hygroPower, LOW);
-  moisturePercent = reversemap(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
-  Console.print("Moisture Percent: ");
-  Console.println(moisturePercent);
+  moisturePercent = map(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
 
   // moistureStatus
   if (moistureSensorVal > 0 && moistureSensorVal < 300) {
@@ -225,26 +213,20 @@ void readMoistureSensor() {
 }
 
 void readWaterLevelSensor() {
-  Console.println("\nReading Water Level.");
   digitalWrite(waterSensorPower, HIGH);
   delay(1000); // nasty hack to wait for moisture drivers
   waterLevelVal = analogRead(waterSensorPin);
   digitalWrite(waterSensorPower, LOW);
   waterLevelPercent = map(waterLevelVal, waterMinVal, waterMaxVal, 0, 100);
-  Console.print("Water Level Percent: ");
-  Console.println(waterLevelPercent);
   
   if (waterLevelPercent < waterLevelThreshold) {
    waterLevelStatus = "LOW";
   } else {
    waterLevelStatus = "OK";
   }    
-  Console.print("Water level is: ");
-  Console.println(waterLevelStatus);
 }
 
 void readAirMeasurements() {
-  Console.println("\nReading air measurements.");
   am.humidityAir = myDHT.readHumidity();
   am.tempAirC = myDHT.readTemperature();
   am.tempAirF = myDHT.readTemperature(true);
@@ -253,16 +235,10 @@ void readAirMeasurements() {
   if (am.humidityAir == 0  && am.tempAirC == 0) {
     Console.println("Failed to read from DHT sensor.");
   }
-  Console.print("Air temp F is: ");
-  Console.println(am.tempAirF);
-  Console.print("Humidity is: ");
-  Console.println(am.humidityAir);
-  Console.print("Heat Index is: ");
-  Console.println(am.heatIndex);
 }
 
 void readSoilMeasurements() {
-  Console.println("\nReading soil measurements.");
+//  Console.println("\nReading soil measurements.");
   byte data[12];
   byte addr[8];
 
@@ -300,13 +276,10 @@ void readSoilMeasurements() {
   float tempRead = ((MSB << 8) | LSB); //using two's compliment
   sm.tempSoilC = tempRead / 16;
   sm.tempSoilF = sm.tempSoilC*9/5+32;
-
-  Console.print("Soil temp F is: ");
-  Console.println(sm.tempSoilF);
 }
 
 void sendToKeen() {  
-  Console.print("\nSending data to Keen.io.");
+  Console.print("\n Sending data to Keen.io");
   String my_output = "{";
   // strings
   my_output += "\"AppId\":\"";                      my_output += appId;             my_output += "\"";
@@ -351,27 +324,31 @@ void sendToKeen() {
 void outputEvent() {  
   String my_output = "\n";
   // strings
-  //my_output += "AppId:";                        my_output += appId;
-  //my_output += ";Location:";                    my_output += location;
-  my_output += ";WaterLevelStatus:";            my_output += waterLevelStatus;
-  my_output += ";MoistureStatus:";               my_output += moistureStatus;
+  my_output += " App Id\t\t\t";        my_output += appId;               my_output +="\n";
+  my_output += " Location\t\t";        my_output += location;            my_output +="\n";
+  my_output += " Water Level\t\t";     my_output += waterLevelStatus;    my_output +="\n";
+  my_output += " Moisture\t\t";         my_output += moistureStatus;      my_output +="\n";
   // numerics
-  //my_output += ";AirTemperatureCelcius:";       my_output += am.tempAirC;
-  my_output += ";AirTemperatureFahrenheit:";    my_output += am.tempAirF;
-  my_output += ";HeatIndex:";                   my_output += am.heatIndex;
-  my_output += ";HumidityPercent:";             my_output += am.humidityAir;
-  my_output += ";LightPercent:";                my_output += lightPercent;
-  my_output += ";LightValue:";                  my_output += lightResistorVal;
-  my_output += ";LightIsOn:";                   my_output += lightIsOn;
-  my_output += ";MoisturePercent:";             my_output += moisturePercent;
-  my_output += ";MoistureValue:";               my_output += moistureSensorVal;
-  //my_output += ";ProbeTemperatureCelcius:";     my_output += sm.tempSoilC;  
-  my_output += ";ProbeTemperatureFahrenheit:";  my_output += sm.tempSoilF;
-  my_output += ";WaterLevelPercent:";           my_output += waterLevelPercent;
-  my_output += ";WaterLevelValue:";             my_output += waterLevelVal;
-  my_output += ";WaterPumptIsOn:";              my_output += waterPumpIsOn;
+  my_output += " Air Temp C\t\t";      my_output += am.tempAirC;         my_output +="\n";
+  my_output += " Air Temp F\t\t";      my_output += am.tempAirF;         my_output +="\n";
+  my_output += " Heat Index\t\t";      my_output += am.heatIndex;        my_output +="\n";
+  my_output += " Humidity %\t\t";      my_output += am.humidityAir;      my_output +="\n";
+  my_output += " Light %\t\t";        my_output += lightPercent;        my_output +="\n";
+  my_output += " Light Val\t\t";       my_output += lightResistorVal;    my_output +="\n";
+  my_output += " Light Is On\t\t";     my_output += lightIsOn;           my_output +="\n";
+  my_output += " Moisture %\t\t";      my_output += moisturePercent;     my_output +="\n";
+  my_output += " Moisture\t\t";        my_output += moistureSensorVal;   my_output +="\n";
+  my_output += " Probe Temp C\t\t";    my_output += sm.tempSoilC;        my_output +="\n";
+  my_output += " Probe Temp F\t\t";    my_output += sm.tempSoilF;        my_output +="\n";
+  my_output += " Water Level %\t\t";   my_output += waterLevelPercent;   my_output +="\n";
+  my_output += " Water Level Val\t";   my_output += waterLevelVal;       my_output +="\n";
+  my_output += " Water Pump Is On\t";  my_output += waterPumpIsOn;       my_output +="\n";
       
-  Console.println(my_output);
+  Console.println();
+  Console.println();
+  Console.println(millis());
+  Console.print("--------------------------------------------------");
+  Console.print(my_output);
 }
 
 long reversemap(long x, long in_min, long in_max, long out_min, long out_max)
