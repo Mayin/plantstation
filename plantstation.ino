@@ -75,7 +75,7 @@ const byte waterPumpPin = A5;
 // todo - find right value for this
 const int waterLevelThreshold = 20; // <- made this up    
 boolean waterPumpIsOn = false;
-unsigned long wateringSeconds = 61000;
+unsigned long wateringSeconds = 30000;
 unsigned long prevWatering = 0;
 int waterMaxVal = 450;
 int waterMinVal = 325;   
@@ -118,6 +118,22 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis();
 
+  // these happen every twelve hours (or so)
+  if (currentMillis - prevHourTwelveMillis > hourTwelveInterval) {
+    prevHourTwelveMillis = currentMillis;
+    
+    waterPlantStarts();
+  }
+
+  // these happen every five minutes (or so)
+  if (currentMillis - prevMinFiveMillis > minFiveInterval) {
+    prevMinFiveMillis = currentMillis;
+    
+    readMoistureSensor();  
+    readWaterLevelSensor();  
+    switchLights();
+  }
+
   // these happen every minute (or so)
   if (currentMillis - prevMinOneMillis > minOneInterval) {
     prevMinOneMillis = currentMillis;
@@ -130,27 +146,11 @@ void loop() {
     sendToKeen();  
   }
   
-  // these happen every five minutes (or so)
-  if (currentMillis - prevMinFiveMillis > minFiveInterval) {
-    prevMinFiveMillis = currentMillis;
-    
-    readMoistureSensor();  
-    readWaterLevelSensor();  
-    //waterPlantStarts();
-    switchLights();
-  }
-
-  // these happen every twelve hours (or so)
-  if (currentMillis - prevHourTwelveMillis > hourTwelveInterval) {
-    prevHourTwelveMillis = currentMillis;
-    
-    waterPlantStarts();
-  }
   waterPlantStops(currentMillis);  
 }
 
 void waterPlantStarts() {
-  if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureThreshold > moisturePercent) {
+  if (!waterPumpIsOn && waterLevelStatus == "OK" && moistureStatus == "Dry") {
     prevWatering = millis();
     waterPumpIsOn = true;
     digitalWrite(waterPumpPin, HIGH);
@@ -197,7 +197,7 @@ void readMoistureSensor() {
   delay(1000); // nasty hack to wait for moisture drivers
   moistureSensorVal = analogRead(hygroPin);
   digitalWrite(hygroPower, LOW);
-  moisturePercent = map(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
+  moisturePercent = reversemap(moistureSensorVal, moistureMinVal, moistureMaxVal, 0, 100);
 
   // moistureStatus
   if (moistureSensorVal > 0 && moistureSensorVal < 300) {
@@ -323,23 +323,27 @@ void sendToKeen() {
 
 void outputEvent() {  
   String my_output = "\n";
-  // strings
+
   my_output += " App Id\t\t\t";        my_output += appId;               my_output +="\n";
   my_output += " Location\t\t";        my_output += location;            my_output +="\n";
-  my_output += " Water Level\t\t";     my_output += waterLevelStatus;    my_output +="\n";
-  my_output += " Moisture\t\t";         my_output += moistureStatus;      my_output +="\n";
-  // numerics
-  my_output += " Air Temp C\t\t";      my_output += am.tempAirC;         my_output +="\n";
-  my_output += " Air Temp F\t\t";      my_output += am.tempAirF;         my_output +="\n";
+
+  my_output += " Temp Air, C\t\t";      my_output += am.tempAirC;         my_output +="\n";
+  my_output += " Temp Soil, C\t\t";    my_output += sm.tempSoilC;        my_output +="\n";
+  my_output += " Temp Air, F\t\t";      my_output += am.tempAirF;         my_output +="\n";
+  my_output += " Temp Soil, F\t\t";    my_output += sm.tempSoilF;        my_output +="\n";
+
   my_output += " Heat Index\t\t";      my_output += am.heatIndex;        my_output +="\n";
   my_output += " Humidity %\t\t";      my_output += am.humidityAir;      my_output +="\n";
+
   my_output += " Light %\t\t";        my_output += lightPercent;        my_output +="\n";
   my_output += " Light Val\t\t";       my_output += lightResistorVal;    my_output +="\n";
   my_output += " Light Is On\t\t";     my_output += lightIsOn;           my_output +="\n";
+
+  my_output += " Moisture\t\t";         my_output += moistureStatus;      my_output +="\n";
   my_output += " Moisture %\t\t";      my_output += moisturePercent;     my_output +="\n";
   my_output += " Moisture\t\t";        my_output += moistureSensorVal;   my_output +="\n";
-  my_output += " Probe Temp C\t\t";    my_output += sm.tempSoilC;        my_output +="\n";
-  my_output += " Probe Temp F\t\t";    my_output += sm.tempSoilF;        my_output +="\n";
+
+  my_output += " Water Level\t\t";     my_output += waterLevelStatus;    my_output +="\n";
   my_output += " Water Level %\t\t";   my_output += waterLevelPercent;   my_output +="\n";
   my_output += " Water Level Val\t";   my_output += waterLevelVal;       my_output +="\n";
   my_output += " Water Pump Is On\t";  my_output += waterPumpIsOn;       my_output +="\n";
