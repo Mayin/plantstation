@@ -1,4 +1,4 @@
-//===== General deployment defs =================
+  //===== General deployment defs =================
 String appId = "Plant01";
 //String location = "Dinning Room Window";
 String location = "Living Room Side Table";
@@ -73,21 +73,22 @@ boolean lightIsOn = false;
 //===== For water pump ===========================
 const byte waterPumpPin = A5;
 // todo - find right value for this
-const int waterLevelThreshold = 20; // <- made this up    
+const int waterLevelThreshold = 5;  
+const int waterMaxVal = 280; // was at 271 full when i got here. its at 263 with 2 cups off. 
+const int waterMinVal = 10;   
 boolean waterPumpIsOn = false;
-unsigned long wateringSeconds = 30000;
+unsigned long wateringSeconds = 15000;
 unsigned long prevWatering = 0;
-int waterMaxVal = 450;
-int waterMinVal = 325;   
 
 //===== For timed events =========================
-// todo - timed events use regule marers for 1 min 1 hour etc and divide blah
 unsigned long prevMinOneMillis = 0;    
-unsigned long minOneInterval = 60000;
+unsigned long minOneInterval = 1*60000;
+
 unsigned long prevMinFiveMillis = 0;
-unsigned long minFiveInterval = 300000;
+unsigned long minFiveInterval = 5*60000;
+
 unsigned long prevHourTwelveMillis = 0;
-unsigned long hourTwelveInterval = 43200000;
+unsigned long hourTwelveInterval = 12*60*60000;
 
 void setup() {
   pinMode(lightSwitchPin, OUTPUT);
@@ -102,7 +103,7 @@ void setup() {
   Console.begin();    
 
   while (!Console);
-  Console.print("\nPlantStation is warming up.\nYun Console is warming up.\nKeen is warming up.\n\n");
+  Console.print("\n PlantStation is warming up.\n\n 60 seconds to first event recording.\n\n");
 
   // Because we need initial moisture and water level readings
   digitalWrite(hygroPower, HIGH);
@@ -279,7 +280,7 @@ void readSoilMeasurements() {
 }
 
 void sendToKeen() {  
-  Console.print("\n Sending data to Keen.io");
+  Console.print("| Sending data to Keen.io\t\t\t|");
   String my_output = "{";
   // strings
   my_output += "\"AppId\":\"";                      my_output += appId;             my_output += "\"";
@@ -310,48 +311,54 @@ void sendToKeen() {
   myKeen.addEvent("arduino_board_test", my_output);
   myKeen.printRequest();
 
-  Console.println();
+  Console.println("");
 
   while (myKeen.available()) {
     char c = myKeen.read();
     Console.print(c);
   }
 
-  Console.println();
-  Console.flush();
+  Console.print("\t\t\t\t|");
+//  Console.flush();
+  Console.print("\n-------------------------------------------------\n");
 }
 
 void outputEvent() {  
-  String my_output = "\n";
 
-  my_output += " App Id\t\t\t";        my_output += appId;               my_output +="\n";
-  my_output += " Location\t\t";        my_output += location;            my_output +="\n";
+  String newLine = "|\t\t\t\t\t\t|\n";
+  String endline = "\t\t\t|\n";
 
-  my_output += " Temp Air, C\t\t";      my_output += am.tempAirC;         my_output +="\n";
-  my_output += " Temp Soil, C\t\t";    my_output += sm.tempSoilC;        my_output +="\n";
-  my_output += " Temp Air, F\t\t";      my_output += am.tempAirF;         my_output +="\n";
-  my_output += " Temp Soil, F\t\t";    my_output += sm.tempSoilF;        my_output +="\n";
-
-  my_output += " Heat Index\t\t";      my_output += am.heatIndex;        my_output +="\n";
-  my_output += " Humidity %\t\t";      my_output += am.humidityAir;      my_output +="\n";
-
-  my_output += " Light %\t\t";        my_output += lightPercent;        my_output +="\n";
-  my_output += " Light Val\t\t";       my_output += lightResistorVal;    my_output +="\n";
-  my_output += " Light Is On\t\t";     my_output += lightIsOn;           my_output +="\n";
-
-  my_output += " Moisture\t\t";         my_output += moistureStatus;      my_output +="\n";
-  my_output += " Moisture %\t\t";      my_output += moisturePercent;     my_output +="\n";
-  my_output += " Moisture\t\t";        my_output += moistureSensorVal;   my_output +="\n";
-
-  my_output += " Water Level\t\t";     my_output += waterLevelStatus;    my_output +="\n";
-  my_output += " Water Level %\t\t";   my_output += waterLevelPercent;   my_output +="\n";
-  my_output += " Water Level Val\t";   my_output += waterLevelVal;       my_output +="\n";
-  my_output += " Water Pump Is On\t";  my_output += waterPumpIsOn;       my_output +="\n";
+  String my_output = "\n ";
+  my_output += millis();
+//  my_output += "\t\t\t\t\t|";
+  my_output += "\n-------------------------------------------------\n"; 
+//  my_output += "\n";
+  my_output += "| App Id\t\t";          my_output += appId;               my_output += endline;
+  my_output += "| Location\t\t";        my_output += location;            my_output += "\t|\n";
+  my_output += newLine;
+  my_output += "| Temp Air, C\t\t";     my_output += am.tempAirC;         my_output += endline;
+  my_output += "| Temp Soil, C\t\t";    my_output += sm.tempSoilC;        my_output += endline;
+  my_output += "| Temp Air, F\t\t";     my_output += am.tempAirF;         my_output += endline;
+  my_output += "| Temp Soil, F\t\t";    my_output += sm.tempSoilF;        my_output += endline;
+  my_output += newLine;
+  my_output += "| Heat Index\t\t";      my_output += am.heatIndex;        my_output += endline;
+  my_output += "| Humidity %\t\t";      my_output += am.humidityAir;      my_output += endline;
+  my_output += newLine;
+  my_output += "| Light %\t\t";         my_output += lightPercent;        my_output += endline;
+  my_output += "| Light Val\t\t";       my_output += lightResistorVal;    my_output += endline;
+  my_output += "| Light Is On\t\t";     my_output += lightIsOn;           my_output += endline;
+  my_output += newLine;
+  my_output += "| Moisture\t\t";        my_output += moistureStatus;      my_output += endline;
+  my_output += "| Moisture %\t\t";      my_output += moisturePercent;     my_output += endline;
+  my_output += "| Moisture\t\t";        my_output += moistureSensorVal;   my_output += endline;
+  my_output += newLine;
+  my_output += "| Water Level\t\t";     my_output += waterLevelStatus;    my_output += endline;
+  my_output += "| Water Level %\t\t";   my_output += waterLevelPercent;   my_output += endline;
+  my_output += "| Water Level Val\t";   my_output += waterLevelVal;       my_output += endline;
+  my_output += "| Water Pump Is On\t";  my_output += waterPumpIsOn;       my_output += endline;
+  my_output += newLine;
       
   Console.println();
-  Console.println();
-  Console.println(millis());
-  Console.print("--------------------------------------------------");
   Console.print(my_output);
 }
 
@@ -359,6 +366,16 @@ long reversemap(long x, long in_min, long in_max, long out_min, long out_max)
 {
   return (in_min - x) * out_max / (in_min - in_max);
 }
+
+/*
+Watering Details
+Watering time                  15 seconds
+Estimated amount per watering   6 oz
+Water tank capacity            64 oz
+Watering Frequency             Every twelve hours (twice daily)
+Estimated watering for         About 5 days
+*/
+
 
 /*
 const int moistureMaxVal = 453;
