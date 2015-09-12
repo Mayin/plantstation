@@ -17,7 +17,7 @@ KeenClient myKeen;
 
 //===== For probe thermometer ===================
 #include "OneWire.h"
-const byte probePin = 3;
+const byte probePin = 3;  
 OneWire myPT(probePin);
 
 typedef struct my_soilmeasurement {
@@ -63,22 +63,22 @@ const byte waterSensorPower = A14;
 int waterLevelVal;
 String waterLevelStatus = "OK";
 
+//===== For water pump ===========================
+const byte waterPumpPin = A5;
+// todo - find right value for this
+const int waterLevelThreshold = 245;  
+const int waterMaxVal = 386; 
+const int waterMinVal = 80;   
+boolean waterPumpIsOn = false;
+unsigned long wateringSeconds = 15000;
+unsigned long prevWatering = 0;
+
 //===== For light switch =========================
 const byte lightSwitchPin = 4;
 const byte lightOnThreshold = 30;
 const int lightMaxVal = 250;  
 const int lightMinVal = 0; 
 boolean lightIsOn = false;
-
-//===== For water pump ===========================
-const byte waterPumpPin = A5;
-// todo - find right value for this
-const int waterLevelThreshold = 5;  
-const int waterMaxVal = 280; // was at 271 full when i got here. its at 263 with 2 cups off. 
-const int waterMinVal = 10;   
-boolean waterPumpIsOn = false;
-unsigned long wateringSeconds = 15000;
-unsigned long prevWatering = 0;
 
 //===== For timed events =========================
 unsigned long prevMinOneMillis = 0;    
@@ -220,7 +220,7 @@ void readWaterLevelSensor() {
   digitalWrite(waterSensorPower, LOW);
   waterLevelPercent = map(waterLevelVal, waterMinVal, waterMaxVal, 0, 100);
   
-  if (waterLevelPercent < waterLevelThreshold) {
+  if (waterLevelVal < waterLevelThreshold) {
    waterLevelStatus = "LOW";
   } else {
    waterLevelStatus = "OK";
