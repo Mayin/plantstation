@@ -41,6 +41,38 @@ The resulting gizmo basically read a bunch of sensors at different intervals and
 This time around, I’ve decided to reconfigure the arduino device to monitor a hydroponic station, Plantstation2.  A slightly different sensor array will be deployed and there will be no relays to control anything.  The focus of the (arduino) part will be to collect information in the system and its environment for later processing.
 
 ### Arduino
+One of the first revisions to the arduino code is to add a method to send a POST 
+```cpp
+#include <ArduinoJson.h>
+String raw_payload;
+
+IPAddress server(192,168,1,5);
+YunClient client;
+
+void send_log() {
+  Console.println("connecting...");
+
+    if (client.connect(server, 8383)) {
+    Console.println("connected");
+    raw_payload = "{\"APPID\": \"" + appId + "\", \"LOCATION\": \"" + location + "\", \"TEMP_AMBIENT_AIR_F\": \"" + am.tempAirF + "\", \"TEMP_PIPE_AIR_F\":  \"" + am.tempAirThermsistorF + "\", \"TEMP_WATER_01_F\":  \"" + wm.tempWaterOneF + "\", \"TEMP_WATER_02_F\":  \"" + wm.tempWaterTwoF + "\", \"TEMP_WATER_03_F\":  \"" + wm.tempWaterThreeF + "\", \"HEAT_INDEX\": \"" + am.heatIndex + "\", \"HUMIDITY\": \"" + am.humidityAir + "\", \"LIGHT_PERCENT\":  \"" + lightPercent + "\", \"LIGHT_VALUES\": \"" + lightResistorVal + "\", \"IS_LED_ON\":  \"" + ledIsOn + "\"}";
+    client.println("POST /plant_logger/plantstation2log/ HTTP/1.1");
+    client.print("Content-length:");
+    client.println(raw_payload.length());
+    client.println("Connection: Close");
+    client.println("Host:192.168.1.5");
+    client.println("Content-Type: application/json; charset=UTF-8");
+    client.println();
+    client.println(raw_payload);
+    Console.println("------------------------");
+    Console.println(raw_payload);
+    Console.println("------------------------");
+    client.stop();
+  } else {
+    Console.println("connection failed");
+    Console.println(server);
+  }
+```
+
 Code, explanation for the rest post
 
 Using Logstash, gathering this information and sending it anywhere we want si rather easy.  Along the way, I fetch local weather data to enrich this data and, finally, write it out to our database(s) of choice.
