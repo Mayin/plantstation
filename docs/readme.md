@@ -40,13 +40,15 @@ The resulting gizmo basically read a bunch of sensors at different intervals and
 
 This time around, I’ve decided to reconfigure the arduino device to monitor a hydroponic station, Plantstation2.  A slightly different sensor array will be deployed and there will be no relays to control anything.  The focus of the (arduino) part will be to collect information in the system and its environment for later processing.
 
+### Arduino
+Code, explanation for the rest post
+
 Using Logstash, gathering this information and sending it anywhere we want si rather easy.  Along the way, I fetch local weather data to enrich this data and, finally, write it out to our database(s) of choice.
 
-Logstash is an ‘event processor’ that divides all possible tasks with events as either Inputs, Filters or Outputs.
+Logstash is an event ‘processor’ that divides all possible tasks with events as either Inputs, Filters or Outputs.
 
-
-![alt text](https://lh5.googleusercontent.com/PG6_hjD5KVvw2QDGQg2LdAlSejCMq_fYp9jdEZKDWV-mqS35nh4x9wa85LY1m1s2EWswlDK7ApryRLSV1KiQ=w1920-h907-rw "Logstash Input")
 ### Logstash Input
+![alt text](https://lh5.googleusercontent.com/PG6_hjD5KVvw2QDGQg2LdAlSejCMq_fYp9jdEZKDWV-mqS35nh4x9wa85LY1m1s2EWswlDK7ApryRLSV1KiQ=w1920-h907-rw "Logstash Input")
 
 ```javascript
 input {
@@ -82,8 +84,8 @@ input {
 }
 ```
 
-![alt text](https://lh6.googleusercontent.com/ZBh0PHCP-nTSUNAqpwtoM_MQw8jUUTYDsolN6752_BXJ1Qx_6H_UUhVzEnk6tOcOFeu_C5PWDW2yr9uuE9vE=w1920-h907-rw "Logstash Filter")
 ### Logstash Filter
+![alt text](https://lh6.googleusercontent.com/ZBh0PHCP-nTSUNAqpwtoM_MQw8jUUTYDsolN6752_BXJ1Qx_6H_UUhVzEnk6tOcOFeu_C5PWDW2yr9uuE9vE=w1920-h907-rw "Logstash Filter")
 
 ```javascript
 filter {
@@ -112,8 +114,8 @@ filter {
 }
 ```
 
-![alt text](https://lh5.googleusercontent.com/ClBS7JjVsbbTydiLiraW0dK-S3kWMTKly6-4bzF9S_g8L7FwYY50gvoK3flW15YDtYTunJsNDiCvI8yzsrP0=w1920-h907-rw "Logstash Output")
 ### Logstash Output
+![alt text](https://lh5.googleusercontent.com/ClBS7JjVsbbTydiLiraW0dK-S3kWMTKly6-4bzF9S_g8L7FwYY50gvoK3flW15YDtYTunJsNDiCvI8yzsrP0=w1920-h907-rw "Logstash Output")
 
 ```javascript
 output {
@@ -179,6 +181,13 @@ output {
   }
 }
 ```
+
+### Table syntax; mssql/mysql, dynamodb
+Code, explanation for ddl OR just content
+
+## Analysis 
+This is where I would put som charts. perhaps some zeppelin charts with..
+
 
 ## Break effort by main areas:
 1. Hardware
