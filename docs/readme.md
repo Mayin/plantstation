@@ -47,6 +47,12 @@ Using Logstash, gathering this information and sending it anywhere we want si ra
 
 Logstash is an ‘event processor’ that divides all possible tasks with events as either Inputs, Filters or Outputs.
 
+![Logstash Input](https://lh5.googleusercontent.com/PG6_hjD5KVvw2QDGQg2LdAlSejCMq_fYp9jdEZKDWV-mqS35nh4x9wa85LY1m1s2EWswlDK7ApryRLSV1KiQ=w1920-h907-rw)
+
+![Logstash Filter](https://lh6.googleusercontent.com/ZBh0PHCP-nTSUNAqpwtoM_MQw8jUUTYDsolN6752_BXJ1Qx_6H_UUhVzEnk6tOcOFeu_C5PWDW2yr9uuE9vE=w1920-h907-rw)
+
+![Logstash Output](https://lh6.googleusercontent.com/XuyC67hYuQILoLNEAe6Woqo1bIhE79joSWKd3_9VafYqGOJwUWbjkPRsU-SMW0AxEdwy5LP1JN2WqI5ULNXE=w1920-h907-rw)
+
 ## Break effort by main areas:
 1. Hardware
  - Arduino Mega (main)
