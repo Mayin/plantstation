@@ -217,6 +217,56 @@ output {
 ### Table syntax; mssql/mysql, dynamodb
 Code, explanation for ddl OR just content
 
+plantstation2log | 
+------------ | 
+appid | 
+location | 
+temp_ambient_air_f  | 
+temp_pipe_air_f | 
+temp_water_01_f | 
+temp_water_02_f | 
+temp_water_03_f | 
+heat_index | 
+humidity | 
+light_percent | 
+light_values | 
+is_led_on | 
+date_added | 
+temp_current_loc_f  | 
+dew_point_f  | 
+uv_index  | 
+precipitation  | 
+weather_text | 
+humidity_current_loc |  
+record_id | 
+
+
+
+```sql
+CREATE TABLE `plantstation2log` (
+  `appid` varchar(510) DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `temp_ambient_air_f` decimal(6,2) DEFAULT NULL,
+  `temp_pipe_air_f` varchar(255) DEFAULT NULL,
+  `temp_water_01_f` varchar(255) DEFAULT NULL,
+  `temp_water_02_f` varchar(255) DEFAULT NULL,
+  `temp_water_03_f` varchar(255) DEFAULT NULL,
+  `heat_index` varchar(255) DEFAULT NULL,
+  `humidity` varchar(255) DEFAULT NULL,
+  `light_percent` varchar(255) DEFAULT NULL,
+  `light_values` varchar(255) DEFAULT NULL,
+  `is_led_on` varchar(255) DEFAULT NULL,
+  `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `temp_current_loc_f` decimal(6,2) DEFAULT NULL,
+  `dew_point_f` decimal(6,2) DEFAULT NULL,
+  `uv_index` decimal(6,2) DEFAULT NULL,
+  `precipitation` decimal(6,2) DEFAULT NULL,
+  `weather_text` varchar(255) DEFAULT NULL,
+  `humidity_current_loc` decimal(6,2) DEFAULT NULL,
+  `record_id` char(36) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+```
+
 ## Analysis 
 This is where I would put som charts. perhaps some zeppelin charts with..
 
