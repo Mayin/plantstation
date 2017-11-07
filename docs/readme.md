@@ -80,7 +80,7 @@ Using Logstash, gathering this information and sending it anywhere we want si ra
 Logstash is an event ‘processor’ that divides all possible tasks with events as either Inputs, Filters or Outputs.
 
 ### Logstash Input
-![alt text](https://lh5.googleusercontent.com/PG6_hjD5KVvw2QDGQg2LdAlSejCMq_fYp9jdEZKDWV-mqS35nh4x9wa85LY1m1s2EWswlDK7ApryRLSV1KiQ=w1920-h907-rw "Logstash Input")
+![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/input.PNG "Logstash Input")
 
 ```javascript
 input {
@@ -117,7 +117,7 @@ input {
 ```
 
 ### Logstash Filter
-![alt text](https://lh6.googleusercontent.com/ZBh0PHCP-nTSUNAqpwtoM_MQw8jUUTYDsolN6752_BXJ1Qx_6H_UUhVzEnk6tOcOFeu_C5PWDW2yr9uuE9vE=w1920-h907-rw "Logstash Filter")
+![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/filter.PNG "Logstash Filter")
 
 ```javascript
 filter {
@@ -147,7 +147,7 @@ filter {
 ```
 
 ### Logstash Output
-![alt text](https://lh5.googleusercontent.com/ClBS7JjVsbbTydiLiraW0dK-S3kWMTKly6-4bzF9S_g8L7FwYY50gvoK3flW15YDtYTunJsNDiCvI8yzsrP0=w1920-h907-rw "Logstash Output")
+![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/output.PNG "Logstash Output")
 
 ```javascript
 output {
@@ -240,35 +240,11 @@ weather_text |
 humidity_current_loc |  
 record_id | 
 
-
-
-```sql
-CREATE TABLE `plantstation2log` (
-  `appid` varchar(510) DEFAULT NULL,
-  `location` varchar(255) DEFAULT NULL,
-  `temp_ambient_air_f` decimal(6,2) DEFAULT NULL,
-  `temp_pipe_air_f` varchar(255) DEFAULT NULL,
-  `temp_water_01_f` varchar(255) DEFAULT NULL,
-  `temp_water_02_f` varchar(255) DEFAULT NULL,
-  `temp_water_03_f` varchar(255) DEFAULT NULL,
-  `heat_index` varchar(255) DEFAULT NULL,
-  `humidity` varchar(255) DEFAULT NULL,
-  `light_percent` varchar(255) DEFAULT NULL,
-  `light_values` varchar(255) DEFAULT NULL,
-  `is_led_on` varchar(255) DEFAULT NULL,
-  `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `temp_current_loc_f` decimal(6,2) DEFAULT NULL,
-  `dew_point_f` decimal(6,2) DEFAULT NULL,
-  `uv_index` decimal(6,2) DEFAULT NULL,
-  `precipitation` decimal(6,2) DEFAULT NULL,
-  `weather_text` varchar(255) DEFAULT NULL,
-  `humidity_current_loc` decimal(6,2) DEFAULT NULL,
-  `record_id` char(36) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-```
+### And records in DynamoDB look like this
+![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/awslogs.PNG "table on DynamoDB")
 
 ## Analysis 
-This is where I would put som charts. perhaps some zeppelin charts with..
+![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/zeppelin.PNG "Zeppelin Rocks")
 
 
 ## Break effort by main areas:
