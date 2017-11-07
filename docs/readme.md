@@ -51,7 +51,7 @@ Logstash is an ‘event processor’ that divides all possible tasks with events
 
 ![Logstash Filter](https://lh6.googleusercontent.com/ZBh0PHCP-nTSUNAqpwtoM_MQw8jUUTYDsolN6752_BXJ1Qx_6H_UUhVzEnk6tOcOFeu_C5PWDW2yr9uuE9vE=w1920-h907-rw)
 
-![Logstash Output](https://lh6.googleusercontent.com/XuyC67hYuQILoLNEAe6Woqo1bIhE79joSWKd3_9VafYqGOJwUWbjkPRsU-SMW0AxEdwy5LP1JN2WqI5ULNXE=w1920-h907-rw)
+![Logstash Output](https://lh5.googleusercontent.com/ClBS7JjVsbbTydiLiraW0dK-S3kWMTKly6-4bzF9S_g8L7FwYY50gvoK3flW15YDtYTunJsNDiCvI8yzsrP0=w1920-h907-rw)
 
 ## Break effort by main areas:
 1. Hardware
