@@ -14,20 +14,17 @@ Lastly, it had a real-time dashboard providing an overview of current and past c
 
 This was my introduction into the arduino ecosystem and the kids and I even showcased it at out local Makerfaire.
 
-## Getting Back Into Arduino  
-Recently, I have gotten interested again on Arduino devices.  
-_here goes sentence about the future not getting here soon enough to devote all available time to this_ 
-
-The resulting gizmo basically read a bunch of sensors at different intervals and used relays, and sensors, to control various functions.  Lastly, all this event information was being sent to Keen for creating some visualizations.
-
-This time around, I’ve decided to reconfigure the arduino device to monitor a hydroponic station, Plantstation2.  
+## Getting Back
+After Makerfaire was over, however, the basil went wild (and consumed) and the arduino went into a box.  This time around, I’ve decided to reconfigure the arduino device to monitor a hydroponic station instead, Plantstation2.  
 
 <img alt="Plantstation" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/plantstation3.png" width="50%">
 
-A slightly different sensor array will be deployed and there will be no relays to control anything.  The focus of the (arduino) part will be to collect information in the system and its environment for later processing.
+A slightly different sensor array will be deployed but there will be no relays to control anything.
+
+Here is a brief overview overview of the mayor steps needed to collect all the sensor data for later processing.
 
 ### Arduino
-One of the first revisions to the arduino code is to add a method to send a POST 
+The first step was to revise the arduino code to send the sensor readings using a POST request. 
 ```cpp
 #include <ArduinoJson.h>
 String raw_payload;
@@ -59,11 +56,11 @@ void send_log() {
   }
 ```
 
-Code, explanation for the rest post
+This request is made once a minute to coincide with the current sensor readin interval.  The endpoint is a <a href="https://www.elastic.co/products/logstash" target="_blank">Logstash Server</a> hosted on a local computer.  Using Logstash, gathering this information and sending it anywhere we want is very simple.  Along the way, I also fetch local weather data to enrich this data.
 
-Using Logstash, gathering this information and sending it anywhere we want si rather easy.  Along the way, I fetch local weather data to enrich this data and, finally, write it out to our database(s) of choice.
+Logstash processing pipelines are separated into intputs, filters and outputs.  
 
-Logstash is an event ‘processor’ that divides all possible tasks with events as either Inputs, Filters or Outputs.
+1. Both the sensor data request from Arduino and the weather information request (from Wunderground) are defined in the input section of the Logstash configuration file.
 
 ### Logstash Input
 <img alt="Logstash Input" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/input.PNG" width="70%">
@@ -101,6 +98,11 @@ input {
   }
 }
 ```
+2. Additionaly, a third input is defined which fetches information from a database server at a set interval.  The reason for this will become clear once we discuss the output for Amazon Web Services shorlty.
+
+The filtering section usually contains the processing, if any, needed in the data pipeline.  In this case, only two actions are taken.
+1. The incoming weather data, which comes in a json object, is parsed for information of interest.
+2. A unique key is generated for later consumption.
 
 ### Logstash Filter
 <img alt="Logstash Filter" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/filter.PNG" width="70%">
@@ -131,6 +133,10 @@ filter {
   }
 }
 ```
+For output, there are a few things oging on.  
+1. First, we take all the sensor data coming from the arduino device and log (insert) as a record in a table in both an MSSQL DB and a MySQL DB.  The only reason to log into separate database servers is to explore each product later on.
+2. Next, when weather data comes in, this weather information is added to the existing sensor data recently logged.
+3. Lastly, we take completed logs (records), those that have both sensor and weather data, and submit another POST request, this time to AWS for insertion into a DynamoDB table.
 
 ### Logstash Output
 <img alt="Logstash Output" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/output.PNG" width="70%">
@@ -201,6 +207,7 @@ output {
 ```
 
 ### Table as Log
+Tables-as-logs are used both locally and on AWS.  
 
 plantstation2log | 
 ------------ | 
