@@ -1,7 +1,13 @@
 # Plantstation2 Logging with Logstash
 
 ## Background Info
-Last time I fiddled with Arduino, I built <a href="https://mtalavera.wordpress.com/2015/09/13/maker-fair-orlando-plantstation-slides/" target="_blank">Plantstation</a>, a system to 'care' for plants.  It kept track of ambient and soil temperature.  It also kept track of soil moisture, humidity and ambient light levels.  Based on this information, it used relays to manage both irrigation and artificial lights.  
+Last time I fiddled with Arduino, I built <a href="https://mtalavera.wordpress.com/2015/09/13/maker-fair-orlando-plantstation-slides/" target="_blank">Plantstation</a>, a system to 'care' for plants.  
+
+<img alt="Plantstation" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/plantstation1.png" width="70%">
+
+It kept track of ambient and soil temperature.  It also kept track of soil moisture, humidity and ambient light levels.  Based on this information, it used relays to manage both irrigation and artificial lights.  
+
+<img alt="Chocolate Mint" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/planstation2.png" width="70%">
 
 Lastly, it had a real-time dashboard providing an overview of current and past conditions.  
 <img alt="Keen Dashboard" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/keen-dashboard.png" width="70%">
