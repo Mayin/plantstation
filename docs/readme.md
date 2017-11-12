@@ -56,13 +56,16 @@ void send_log() {
   }
 ```
 
-This request is made once a minute to coincide with the current sensor readin interval.  The endpoint is a <a href="https://www.elastic.co/products/logstash" target="_blank">Logstash Server</a> hosted on a local computer.  Using Logstash, gathering this information and sending it anywhere we want is very simple.  Along the way, I also fetch local weather data to enrich this data.
+This request is made once a minute to coincide with the current sensor reading interval.  
+
+### Logstash
+The endpoint is a <a href="https://www.elastic.co/products/logstash" target="_blank">Logstash Server</a> hosted on a local computer.  Using Logstash, gathering this information and sending it anywhere we want is very simple.  Along the way, I also fetch local weather data to enrich this data.
 
 Logstash processing pipelines are separated into intputs, filters and outputs.  
 
 1. Both the sensor data request from Arduino and the weather information request (from Wunderground) are defined in the input section of the Logstash configuration file.
 
-### Logstash Input
+#### Logstash Input
 <img alt="Logstash Input" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/input.PNG" width="70%">
 
 ```javascript
@@ -104,7 +107,7 @@ The filtering section usually contains the processing, if any, needed in the dat
 1. The incoming weather data, which comes in a json object, is parsed for information of interest.
 2. A unique key is generated for later consumption.
 
-### Logstash Filter
+#### Logstash Filter
 <img alt="Logstash Filter" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/filter.PNG" width="70%">
 
 ```javascript
@@ -138,7 +141,7 @@ For output, there are a few things oging on.
 2. Next, when weather data comes in, this weather information is added to the existing sensor data recently logged.
 3. Lastly, we take completed logs (records), those that have both sensor and weather data, and submit another POST request, this time to AWS for insertion into a DynamoDB table.
 
-### Logstash Output
+#### Logstash Output
 <img alt="Logstash Output" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/output.PNG" width="70%">
 
 ```javascript
@@ -207,7 +210,7 @@ output {
 ```
 
 ### Table as Log
-Tables-as-logs are used both locally and on AWS.  
+A simple table is used as a log both locally (on MSSQL and MySQL) and on AWS (DynamoDB)
 
 plantstation2log | 
 ------------ | 
@@ -238,44 +241,16 @@ record_id |
 ## Analysis 
 <img alt="Zeppelin Rocks" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/zeppelin.PNG" width="70%">
 
-## Break effort by main areas:
-1. Hardware
- - Arduino Mega (main)
- - Iduino Yun Shield (wifi module+)
- - Connector shield (coming soon)  Will allow better sensor connections to computer.
+
+#### Notes
+ - Mention Accuweather
+ - have to fix pipe air temperature
+ - Where to from here, why
  - Sensors
- 	 - Have now
  	 - In near future
- 	
-2. Software
- - Arduino software in Mega
- - Ilos
- 	 - Logstash
- 	 - Zeppelin
- - Lucy
- 	 - MySQL DB
- 	 - MSSQL DB
  - AWS
  	 - API Gateway
  	 - DynamoDB
-  
-3. Data Flow - Everything goes thru Logstash
- - Inputs
- 	-- **http poller** Wunderweather API, Current conditions.
- 	-- **http** Arduino HTTP POST. 
-    -- **jdbc**
- 	   - grab last completed record from db (mysql) 
- - Filters
- 	-- **json** 'message' source defined 
- 	-- **mutate** Parsing Wunderweather json
- - Outputs
- 	-- **jdbc** 
- 	    - Insert arduino measurements into databases (MSSQL and MySQL Servers)
- 	    - Cleanup of funny business 
- 	    - Update db records with current weather conditions
- 	-- **http** 
- 	    - Insert into aws dynamodb
-
 4. Monitoring with Zeppelin
  - Sensor dashboard
  	- Temperature, air (including current conditions) and water
@@ -293,9 +268,4 @@ record_id |
  		- Total
  		- Daily
  		- Hourly 
-
-#### Notes
- - Mention Accuweather
- - have to fix pipe air temperature
- - Where to from here, why
 
