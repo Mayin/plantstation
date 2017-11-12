@@ -243,6 +243,11 @@ The end of our pipeline is the DynamoDB version of this table as shown below.
 This concludes the first step into this second iteration of arduino for me.  Having all the sensor data logged to AWS greatly expands the possibilities of where to go next.
 
 ### Analysis 
-Not quite.  Previewing the information collected is very simple and can be used to get a general idea of future posibilities.
+Not quite, however, previewing the information collected is very simple and gives a general idea for future development.
 
 <img alt="Zeppelin Rocks" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/zeppelin.PNG" width="70%">
+
+### Conclusion
+Setting up a logging pipeline is a common base from which many tools are built.  Using a garden, or something similar as the origin of this data, provides an alternative to the usual web app exhaust typically logged.  Equally interesting outputs can be explored as well and my intent is to explore these in future posts.
+
+Thait is it; thanks for reading.  All the code for this post is in the repo.  
