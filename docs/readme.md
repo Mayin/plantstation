@@ -1,9 +1,5 @@
 # Plantstation2 Logging with Logstash
 
-## Logstash
-Brief about logstash.
-
-
 ## Background Info
 Last time I fiddled with Arduino, I built <a href="https://mtalavera.wordpress.com/2015/09/13/maker-fair-orlando-plantstation-slides/" target="_blank">Plantstation</a>, a system to 'care' for plants.  It kept track of ambient and soil temperature.  It also kept track of soil moisture, humidity and ambient light levels.  Based on this information, it used relays to manage both irrigation and artificial lights.  
 
@@ -194,8 +190,7 @@ output {
 }
 ```
 
-### Table syntax; mssql/mysql, dynamodb
-Code, explanation for ddl OR just content
+### Table as Log
 
 plantstation2log | 
 ------------ | 
