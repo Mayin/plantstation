@@ -1,38 +1,18 @@
-# Plantstation2 Monitoring with Logstash
+# Plantstation2 Logging with Logstash
 
-## Summary
-… what i am doing here
-## Background Info
---- where I am coming from; highlights of previous (PS)
-_image of last software stack_
-… since then/ hydroponic system, ps2 is born
-_hydro image_
-## Overview
-… go over the general system and define the focus of this post.
-_general data flow thru logstash_
 ## Logstash
 Brief about logstash.
 
-Breaking logstash into input, filter and output.
-Per each section, do 
-snippet of code 
-visual of pipe section.
-Where it begins
-Where it ends
-… these are things like
-Arduino code that sends data
-Ms sql recipient
-Mysql recipient
-DynamodDB recipient
 
-General output display for kicks using zeppelin
-Where to from here, why
+## Background Info
+Last time I fiddled with Arduino, I built <a href="https://mtalavera.wordpress.com/2015/09/13/maker-fair-orlando-plantstation-slides/" target="_blank">Plantstation</a>, a system to 'care' for plants.  It kept track of ambient and soil temperature.  It also kept track of soil moisture, humidity and ambient light levels.  Based on this information, it used relays to manage both irrigation and artificial lights.  
+
+Lastly, it had a real-time dashboard providing an overview of current and past conditions.  
+<img alt="Keen Dashboard" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/keen-dashboard.png" width="70%">
+
+This was my introduction into the arduino ecosystem and the kids and I even showcased it at out local Makerfaire.
 
 ## Getting Back Into Arduino  
-Last time I fiddled with Arduino, I had built <a href="https://mtalavera.wordpress.com/2015/09/13/maker-fair-orlando-plantstation-slides/" target="_blank">Plantstation</a>, a system to care for plants.  It kept track of ambient and soil temperature.  It also kept track of moisture, humidity and light levels.  Based on this information, it used relays to manage both irrigation and lights.  Finally, it had a real-time dashboard providing an overview of current and past conditions.  
-
-This was my introduction into the arduino ecosystem and the kids and I even displayed it at out local Makerfaire.
-
 Recently, I have gotten interested again on Arduino devices.  
 _here goes sentence about the future not getting here soon enough to devote all available time to this_ 
 
@@ -80,7 +60,7 @@ Using Logstash, gathering this information and sending it anywhere we want si ra
 Logstash is an event ‘processor’ that divides all possible tasks with events as either Inputs, Filters or Outputs.
 
 ### Logstash Input
-![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/input.PNG "Logstash Input")
+<img alt="Logstash Input" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/input.PNG" width="70%">
 
 ```javascript
 input {
@@ -117,7 +97,7 @@ input {
 ```
 
 ### Logstash Filter
-![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/filter.PNG "Logstash Filter")
+<img alt="Logstash Filter" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/filter.PNG" width="70%">
 
 ```javascript
 filter {
@@ -130,7 +110,7 @@ filter {
     mutate {
       add_field => {"TEMP_CURRENT_LOC_F" => "%{[current_observation][temp_f]}"}
       add_field => {"HUMIDITY_CURRENT_LOC" => "%{[current_observation][relative_humidity]}"}
-      add_field => {"DEW_POINT_F" => "%{[current_observation][dewpoint_f]}"}
+		      add_field => {"DEW_POINT_F" => "%{[current_observation][dewpoint_f]}"}
       add_field => {"UV_INDEX" => "%{[current_observation][UV]}"}
       add_field => {"PRECIPITATION" => "%{[current_observation][precip_1hr_in]}"}
       add_field => {"WEATHER_TEXT" => "%{[current_observation][weather]}"}
@@ -147,7 +127,7 @@ filter {
 ```
 
 ### Logstash Output
-![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/output.PNG "Logstash Output")
+<img alt="Logstash Output" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/output.PNG" width="70%">
 
 ```javascript
 output {
@@ -240,12 +220,11 @@ weather_text |
 humidity_current_loc |  
 record_id | 
 
-### And records in DynamoDB look like this
-![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/awslogs.PNG "table on DynamoDB")
+### DynamoDB 
+<img alt="Table on DynamoDB" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/awslogs.PNG" width="70%">
 
 ## Analysis 
-![alt text](https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/zeppelin.PNG "Zeppelin Rocks")
-
+<img alt="Zeppelin Rocks" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/zeppelin.PNG" width="70%">
 
 ## Break effort by main areas:
 1. Hardware
@@ -306,4 +285,5 @@ record_id |
 #### Notes
  - Mention Accuweather
  - have to fix pipe air temperature
+ - Where to from here, why
 
