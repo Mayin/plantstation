@@ -3,11 +3,11 @@
 ## Background Info
 Last time I fiddled with Arduino, I built <a href="https://mtalavera.wordpress.com/2015/09/13/maker-fair-orlando-plantstation-slides/" target="_blank">Plantstation</a>, a system to 'care' for plants.  
 
-<img alt="Plantstation" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/plantstation1.png" width="70%">
+<img alt="Plantstation" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/plantstation1.png" width="50%">
 
 It kept track of ambient and soil temperature.  It also kept track of soil moisture, humidity and ambient light levels.  Based on this information, it used relays to manage both irrigation and artificial lights.  
 
-<img alt="Chocolate Mint" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/planstation2.png" width="70%">
+<img alt="Chocolate Mint" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/planstation2.png" width="50%">
 
 Lastly, it had a real-time dashboard providing an overview of current and past conditions.  
 <img alt="Keen Dashboard" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/keen-dashboard.png" width="70%">
@@ -20,7 +20,11 @@ _here goes sentence about the future not getting here soon enough to devote all 
 
 The resulting gizmo basically read a bunch of sensors at different intervals and used relays, and sensors, to control various functions.  Lastly, all this event information was being sent to Keen for creating some visualizations.
 
-This time around, I’ve decided to reconfigure the arduino device to monitor a hydroponic station, Plantstation2.  A slightly different sensor array will be deployed and there will be no relays to control anything.  The focus of the (arduino) part will be to collect information in the system and its environment for later processing.
+This time around, I’ve decided to reconfigure the arduino device to monitor a hydroponic station, Plantstation2.  
+
+<img alt="Plantstation" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/plantstation3.png" width="50%">
+
+A slightly different sensor array will be deployed and there will be no relays to control anything.  The focus of the (arduino) part will be to collect information in the system and its environment for later processing.
 
 ### Arduino
 One of the first revisions to the arduino code is to add a method to send a POST 
