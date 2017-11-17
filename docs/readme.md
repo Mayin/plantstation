@@ -15,7 +15,7 @@ Lastly, it had a real-time dashboard providing an overview of current and past c
 This was my introduction into the arduino ecosystem and the kids and I even showcased it at out local Makerfaire.
 
 ## Getting Back
-After Makerfaire was over, however, the basil went wild (and consumed) and the arduino went into a box.  This time around, I’ve decided to reconfigure the arduino device to monitor a hydroponic station instead, Plantstation2.  
+After Makerfaire was over, however, the basil went wild (and consumed) and the arduino went into a box.  This time around, I’ve decided to reconfigure the arduino device to monitor a hydroponic station, Plantstation2.  
 
 <img alt="Plantstation" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/plantstation3.png" width="50%">
 
@@ -57,10 +57,10 @@ void send_log() {
   }
 ```
 
-This request is made once a minute to coincide with the current sensor reading interval.  This reading interval was picked randomly  and all the details are in the arduino code in the repo.
+This request is made once a minute to coincide with the current sensor reading interval.  This reading interval was picked randomly and all the details are in the arduino code in the repo.
 
 ### Logstash
-The endpoint is a <a href="https://www.elastic.co/products/logstash" target="_blank">Logstash Server</a> hosted on a local computer.  Using Logstash, gathering this information and sending it anywhere we want is very simple.  Along the way, I also fetch local weather data to enrich this data.
+The endpoint is a <a href="https://www.elastic.co/products/logstash" target="_blank">Logstash Server</a> hosted on a local computer.  Using Logstash, gathering this information and sending it anywhere we want is very simple.  Along the way, I also fetch local weather data to enrich these logs.
 
 Logstash processing pipelines are separated into **intputs**, **filters** and **outputs**.  
 
@@ -102,7 +102,7 @@ input {
   }
 }
 ```
-2. Additionaly, a third input is defined which fetches information from a database server at a set interval.  The reason for this will become clear once we discuss the output for Amazon Web Services shorlty.
+2. Additionaly, a third input is defined which fetches information from a database server at a set interval.  The reason for this will become clear when exaplaining the output part of our logstash configuration.
 
 #### Logstash Filter
 The filtering section usually contains the processing, if any, needed in the data pipeline.  In this case, only two actions are taken.
@@ -122,7 +122,7 @@ filter {
     mutate {
       add_field => {"TEMP_CURRENT_LOC_F" => "%{[current_observation][temp_f]}"}
       add_field => {"HUMIDITY_CURRENT_LOC" => "%{[current_observation][relative_humidity]}"}
-		      add_field => {"DEW_POINT_F" => "%{[current_observation][dewpoint_f]}"}
+      add_field => {"DEW_POINT_F" => "%{[current_observation][dewpoint_f]}"}
       add_field => {"UV_INDEX" => "%{[current_observation][UV]}"}
       add_field => {"PRECIPITATION" => "%{[current_observation][precip_1hr_in]}"}
       add_field => {"WEATHER_TEXT" => "%{[current_observation][weather]}"}
@@ -139,9 +139,9 @@ filter {
 ```
 #### Logstash Output
 For output, there are a few things going on.  
-1. First, we take all the sensor data coming from the arduino device and log (insert) as a record in a table in both an MSSQL DB and a MySQL DB.  The only reason to log into separate database servers is to explore each product later on.
-2. Next, when weather data comes in, this weather information is added to the existing sensor data recently logged.
-3. Lastly, we take completed logs (records), those that have both sensor and weather data, and submit another POST request, this time to AWS for insertion into a DynamoDB table.
+1. First, we take all the sensor data coming from the arduino device and log (insert) as a record in a table in both an MSSQL DB and a MySQL DB.  The only reason to log into separate database servers is to explore using each product later on.
+2. Next, when weather information comes in, this information is added to the existing sensor data recently logged.
+3. Lastly, we take completed log records (those that have both sensor and weather data) and submit another POST request.  This time, the completed log is sent to a DynamoDB table on AWS.
 
 <img alt="Logstash Output" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/output.PNG" width="70%">
 
@@ -237,7 +237,7 @@ humidity_current_loc |
 record_id | 
 
 ### DynamoDB 
-The end of our pipeline is the DynamoDB version of this table as shown below.  
+The end of this pipeline is the DynamoDB version of this table as shown below.  
 <img alt="Table on DynamoDB" src="https://raw.githubusercontent.com/mariotalavera/plantstation/master/docs/images/awslogs.PNG" width="70%">
 
 This concludes the first step into this second iteration of arduino for me.  Having all the sensor data logged to AWS greatly expands the possibilities of where to go next.
@@ -250,4 +250,4 @@ Not quite, however, previewing the information collected is very simple and give
 ### Conclusion
 Setting up a logging pipeline is a common base from which many tools are built.  Using a garden, or something similar as the origin of this data, provides an alternative to the usual web app exhaust typically logged.  Equally interesting outputs can be explored as well and my intent is to explore these in future posts.
 
-Thait is it; thanks for reading.  All the code for this post is in the repo.  
+That is it; thanks for reading.  All the code for this post is in the repo.  
